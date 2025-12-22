@@ -1,3 +1,45 @@
+// ========================================
+// MLM PARENT ID TRACKING - START
+// ========================================
+
+/**
+ * Extract URL parameter by name
+ * Example: ?parent_id=marysmith returns "marysmith"
+ */
+function getURLParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+/**
+ * Capture parent_id from URL on page load
+ * Supports both 'via' (Tapfiliate convention) and 'parent_id' parameters
+ * Runs automatically when page loads
+ */
+function captureParentId() {
+    // Try 'via' first (Tapfiliate convention), then fallback to 'parent_id'
+    const parentId = getURLParameter('via') || getURLParameter('parent_id');
+    const parentIdField = document.getElementById('parent_id');
+
+    if (parentId && parentIdField) {
+        parentIdField.value = parentId;
+        console.log('✅ Parent ID captured from URL:', parentId);
+    } else {
+        console.log('ℹ️ No parent ID in URL - direct signup');
+    }
+}
+
+// Run on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', captureParentId);
+} else {
+    captureParentId();
+}
+
+// ========================================
+// MLM PARENT ID TRACKING - END
+// ========================================
+
 // Form State Management
 const formState = {
     currentPage: 1,
@@ -15,14 +57,18 @@ const formState = {
     companyName: '',
     companyWebsite: '',
     numberOfProperties: '',
-    companyDescription: ''
+    companyDescription: '',
+    wantsDemoCall: false
 };
 
+// Affiliate ID created after Page 3 (Stage A)
+let createdAffiliateId = null;
+
 // Backend API Endpoint
-// This should point to your serverless function (Netlify/Vercel/etc)
-// For local development, use: 'http://localhost:8888/.netlify/functions/create-affiliate'
-// For production, this will be automatically set by your hosting platform
-const BACKEND_API_URL = '/.netlify/functions/create-affiliate';
+// This points to your AWS Amplify API endpoint
+// For AWS Amplify, the endpoint is: /api/create-affiliate
+// If you're using a custom API Gateway URL, replace this with your full API Gateway endpoint
+const BACKEND_API_URL = '/api/create-affiliate';
 
 // Map program currency to Tapfiliate Program ID
 // These are the actual program IDs from your Tapfiliate dashboard
@@ -157,6 +203,765 @@ const countries = [
     'Senegal', 'Ivory Coast', 'Tanzania', 'Uganda', 'Ethiopia', 'Rwanda', 'Mauritius'
 ];
 
+// Translation dictionaries
+const TEXT_TRANSLATIONS_DE = {
+    "Join Stasher's Affiliate Program": "Treten Sie dem Stasher-Affiliate-Programm bei",
+    "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Helfen Sie Ihren Gästen oder Kunden, ihr Gepäck aufzubewahren und erhalten Sie zusätzliche Einnahmen, höhere Kundenzufriedenheit und bessere Bewertungen.",
+    "Totally Free to Join": "Kostenlose Anmeldung",
+    "Takes Less Than 1 Minute": "Dauert weniger als 1 Minute",
+    "Get Started Now": "Jetzt loslegen",
+    "Get started now": "Jetzt beginnen",
+    "Already have an account?": "Sie haben bereits ein Konto?",
+    "Login": "Anmelden",
+    "Built for": "Entwickelt für",
+    "Airbnb hosts": "Airbnb-Gastgeber",
+    "Travel blogs": "Reiseblogs",
+    "Venues": "Veranstaltungsorte",
+    "Transportation": "Transportunternehmen",
+    "STRs": "Kurzzeitvermieter",
+    "Travel apps": "Reise-Apps",
+    "City guides": "Stadtführer",
+    "Events": "Veranstaltungen",
+    "Why should you join the program?": "Warum sollten Sie dem Programm beitreten?",
+    "Extra Revenue Stream": "Zusätzliche Einnahmequelle",
+    "Receive 10% commission for every booking you generate via your referral link.": "Erhalten Sie 10 % Provision für jede Buchung, die über Ihren Empfehlungslink erfolgt.",
+    "Customer Satisfaction": "Kundenzufriedenheit",
+    "Provide your guests or clients with a helpful service and make them happy.": "Bieten Sie Ihren Gästen oder Kunden einen hilfreichen Service und machen Sie sie glücklich.",
+    "Global Coverage": "Globale Abdeckung",
+    "Stasher is live with thousands of locations in more than 1,190 cities globally.": "Stasher ist mit Tausenden Standorten in über 1.190 Städten weltweit verfügbar.",
+    "How does it work?": "Wie funktioniert das?",
+    "Sign up for free": "Kostenlos anmelden",
+    "Create your account in under a minute. Fill out the form and you're ready to go.": "Erstellen Sie Ihr Konto in weniger als einer Minute. Füllen Sie das Formular aus und schon kann es losgehen.",
+    "Receive your link": "Erhalten Sie Ihren Link",
+    "Get your referral link, discount code, and dashboard access. Everything is stored in your dashboard.": "Erhalten Sie Ihren Empfehlungslink, Rabattcode und Dashboard-Zugang. Alles befindet sich in Ihrem Dashboard.",
+    "Share Stasher": "Stasher teilen",
+    "Share your link with customers through messages, guides, emails, or FAQs.": "Teilen Sie Ihren Link mit Kunden über Nachrichten, Guides, E-Mails oder FAQs.",
+    "Partnerships": "Partnerschaften",
+    "Trusted by top brands": "Vertrauenswürdig für führende Marken",
+    "Leading hospitality and travel companies trust Stasher to provide seamless luggage storage solutions for their customers.": "Führende Hospitality- und Reiseunternehmen vertrauen Stasher, um ihren Kunden nahtlose Gepäckaufbewahrung zu bieten.",
+    "Stasher in the Media": "Stasher in den Medien",
+    "Trusted by the travel industry's leading voices": "Von den führenden Stimmen der Reisebranche empfohlen",
+    "Leading outlets highlight how Stasher helps hosts, property managers, and venues offer seamless baggage storage.": "Renommierte Medien zeigen, wie Stasher Gastgebern, Property-Managern und Veranstaltungsorten hilft, eine nahtlose Gepäckaufbewahrung bereitzustellen.",
+    "“A simple way for hospitality brands to add a valuable guest benefit.”": "„Eine einfache Möglichkeit für Hospitality-Marken, einen wertvollen Gästeservice anzubieten.“",
+    "— Forbes": "— Forbes",
+    "“Stasher bridges the gap between travelers and local businesses in minutes.”": "„Stasher überbrückt die Lücke zwischen Reisenden und lokalen Unternehmen in wenigen Minuten.“",
+    "— TechCrunch": "— TechCrunch",
+    "“Hosts boost revenue while keeping their guests delighted and stress-free.”": "„Hosts steigern ihre Einnahmen und halten ihre Gäste zufrieden und stressfrei.“",
+    "— BBC Travel": "— BBC Travel",
+    "Check our locations": "Unsere Standorte ansehen",
+    "Find secure luggage storage near you in just a few clicks.": "Finden Sie mit wenigen Klicks eine sichere Gepäckaufbewahrung in Ihrer Nähe.",
+    "View locations": "Standorte ansehen",
+    "Secure & convenient locations": "Sichere und praktische Standorte",
+    "Millions of bags stored safely": "Millionen sicher aufbewahrter Gepäckstücke",
+    "Excellent reviews": "Ausgezeichnete Bewertungen",
+    "Available 24/7": "Rund um die Uhr verfügbar",
+    "Frequently Asked Questions": "Häufig gestellte Fragen",
+    "Is it free to open an affiliate account?": "Ist die Eröffnung eines Affiliate-Kontos kostenlos?",
+    "Yes, it totally free.": "Ja, sie ist völlig kostenlos.",
+    "Can I track bookings and performance?": "Kann ich Buchungen und Performance verfolgen?",
+    "Yes, once you sign up, you will receive an email with the login page to access your personal dashboard, where you can track clicks, conversions, CVR, and much more!": "Ja, nach der Anmeldung erhalten Sie eine E-Mail mit dem Login-Link zu Ihrem persönlichen Dashboard, in dem Sie Klicks, Conversions, CVR und vieles mehr verfolgen können.",
+    "Where can I find my referral link or coupon code?": "Wo finde ich meinen Empfehlungslink oder Rabattcode?",
+    "You can find your referral link or coupon code in the email you received once your account is approved (it takes a few hours to 1 day since you signed up) or via your personal dashboard.": "Sie finden Ihren Empfehlungslink oder Rabattcode in der E-Mail, die Sie nach der Freischaltung Ihres Kontos erhalten (dies dauert nur wenige Stunden bis zu einem Tag nach der Anmeldung), oder in Ihrem persönlichen Dashboard.",
+    "How and when do I get paid my commission?": "Wie und wann erhalte ich meine Provision?",
+    "In order to receive your commission, you have to enter your bank details by logging in to your dashboard (see instructions here). The commission is paid every month (the minimum threshold is 10 EUR / GBP / USD for the payout; if it is not met, you will receive the payment on the next payment until you reach the threshold).": "Um Ihre Provision zu erhalten, geben Sie Ihre Bankdaten in Ihrem Dashboard ein (siehe Anleitung dort). Die Provision wird monatlich ausgezahlt (Mindestbetrag 10 EUR / GBP / USD; wenn dieser nicht erreicht wird, erfolgt die Auszahlung, sobald der Betrag erreicht ist).",
+    "Can I appear on your website as a partner?": "Kann ich auf Ihrer Website als Partner erscheinen?",
+    "Will I need to do a lot of administrative work?": "Muss ich viel Verwaltungsarbeit leisten?",
+    "Certainly Not! The process is quite straightforward and efficient. It only takes a few minutes to set up. You simply need to add your referral link and coupon code to your guest communications. This can be done through various channels such as emails, your website, or any other relevant platform. Once this is done, you're all set and ready to go. There's minimal administrative work involved, making it a hassle-free addition to your communication strategy.": "Ganz und gar nicht! Der Prozess ist sehr einfach und effizient und dauert nur wenige Minuten. Sie müssen lediglich Ihren Empfehlungslink und Rabattcode in Ihre Gästekommunikation einfügen – z. B. per E-Mail, auf Ihrer Website oder über andere Kanäle. Danach ist alles eingerichtet und es fällt kaum Verwaltungsaufwand an.",
+    "What criteria does Stasher consider for potential partners?": "Welche Kriterien berücksichtigt Stasher für potenzielle Partner?",
+    "There are no specific criteria to consider for potential partners, if you have customers who need luggage storage or want to promote our service and gain commission, you are welcome. Sign up today and receive a 10% commission on every booking you generate.": "Es gibt keine speziellen Kriterien. Wenn Sie Kunden haben, die eine Gepäckaufbewahrung benötigen oder unseren Service bewerben und Provision verdienen möchten, sind Sie herzlich willkommen. Melden Sie sich noch heute an und erhalten Sie 10 % Provision auf jede generierte Buchung.",
+    "Can I customize the service to fit my business needs?": "Kann ich den Service an mein Unternehmen anpassen?",
+    "Yes, there are various customisation features depending on the type of collaboration, such as white-label options.": "Ja, je nach Art der Zusammenarbeit gibt es verschiedene Anpassungsmöglichkeiten, zum Beispiel White-Label-Optionen.",
+    "Are there marketing and promotional opportunities for partners?": "Gibt es Marketing- und Promotionsmöglichkeiten für Partner?",
+    "How can I stay informed about updates and changes in the partnership program?": "Wie bleibe ich über Aktualisierungen und Änderungen des Partnerprogramms informiert?",
+    "Usually, we don't make any changes once you set up your account, but for any small changes or updates we will keep you posted via email.": "Normalerweise nehmen wir nach der Einrichtung Ihres Kontos keine Änderungen vor. Sollte es kleinere Anpassungen oder Updates geben, informieren wir Sie per E-Mail.",
+    "Do the affiliates/partners need to sign any contract/collaboration agreement?": "Müssen Affiliates/Partner einen Vertrag oder eine Vereinbarung unterschreiben?",
+    "The only thing you have to do is accept the T&Cs once you sign up as an affiliate. If you need a contract, we can create one depending on your needs.": "Sie müssen lediglich die AGB akzeptieren, sobald Sie sich als Affiliate registrieren. Falls Sie einen Vertrag benötigen, können wir diesen nach Ihren Anforderungen erstellen.",
+    "How does customer support work?": "Wie funktioniert der Kundensupport?",
+    "Could the booking be made for a few days and not only hours?": "Kann eine Buchung auch für mehrere Tage und nicht nur Stunden erfolgen?",
+    "Yes, you can leave your bags for a few minutes up to a whole year.": "Ja, Sie können Ihr Gepäck von wenigen Minuten bis zu einem ganzen Jahr abgeben.",
+    "How do the Stashpoints know that they have received a booking?": "Woher wissen die Stashpoints, dass sie eine Buchung erhalten haben?",
+    "All of our partners get a confirmation email and an update instantly once you place your booking. So you can rest assured that the location will be waiting for you.": "Alle unsere Partner erhalten unmittelbar nach Ihrer Buchung eine Bestätigungs-E-Mail und eine Aktualisierung. Sie können sich also darauf verlassen, dass der Standort auf Sie wartet.",
+    "Program": "Programm",
+    "Company Type": "Unternehmensart",
+    "Personal Info": "Persönliche Daten",
+    "Company Details": "Unternehmensdetails",
+    "Final Step": "Letzter Schritt",
+    "Choose your preferred currency": "Wählen Sie Ihre bevorzugte Währung",
+    "US Dollar": "US-Dollar",
+    "Euro": "Euro",
+    "British Pound": "Britisches Pfund",
+    "Australian Dollar": "Australischer Dollar",
+    "Back to Home": "Zurück zur Startseite",
+    "Continue": "Weiter",
+    "What Type of Company Are You?": "Welche Art von Unternehmen sind Sie?",
+    "Select the option that best describes your business": "Wählen Sie die Option, die Ihr Unternehmen am besten beschreibt.",
+    "I want to store bags (Supply)": "Ich möchte Gepäck lagern (Supply)",
+    "Store bags and earn money for every bag you store.": "Lagern Sie Gepäck und verdienen Sie an jeder Aufbewahrung.",
+    "Vacation Rental / STR / Airbnb Host": "Ferienvermietung / STR / Airbnb-Gastgeber",
+    "Short-term rental property management and Airbnb Hosts.": "Kurzzeitvermietungen und Airbnb-Gastgeber.",
+    "PMS": "PMS",
+    "Property Management System provider": "Anbieter eines Property-Management-Systems",
+    "Venue": "Veranstaltungsort",
+    "Museums, Stadiums, Theatres, Musical Events, etc.": "Museen, Stadien, Theater, Konzerte usw.",
+    "Blog": "Blog",
+    "Travel blog or content creator": "Reiseblog oder Content Creator",
+    "Other": "Andere",
+    "Other business type": "Andere Unternehmensart",
+    "Tour Operator": "Reiseveranstalter",
+    "Transportations": "Transportdienste",
+    "Back": "Zurück",
+    "Personal Information": "Persönliche Angaben",
+    "Tell us about yourself": "Erzählen Sie uns von sich.",
+    "First Name *": "Vorname *",
+    "Last Name *": "Nachname *",
+    "Email *": "E-Mail *",
+    "Password *": "Passwort *",
+    "Minimum 8 characters": "Mindestens 8 Zeichen",
+    "Company Details": "Unternehmensdetails",
+    "Tell us about your company": "Erzählen Sie uns von Ihrem Unternehmen.",
+    "City *": "Stadt *",
+    "Country *": "Land *",
+    "Company Name *": "Firmenname *",
+    "Company Name *": "Firmenname *",
+    "Commission type *": "Provisionstyp *",
+    "Select commission type": "Provisionstyp auswählen",
+    "10% commission": "10% Provision",
+    "10% discount code": "10% Rabattcode",
+    "Custom": "Individuell",
+    "Company Website": "Firmenwebsite",
+    "Number of Properties": "Anzahl der Immobilien",
+    "Company Description": "Firmenbeschreibung",
+    "Name": "Name",
+    "Email": "E-Mail",
+    "Company Name": "Firmenname",
+    "Location": "Standort",
+    "Website": "Website",
+    "Description": "Beschreibung",
+    "Final Step – Almost There!": "Letzter Schritt – fast geschafft!",
+    "Book a free demo call to get personalized onboarding.": "Buchen Sie ein kostenloses Demo-Gespräch für ein persönliches Onboarding.",
+    "Book a Demo Call": "Demo-Termin buchen",
+    "Get a free personalized onboarding and learn how to maximize your earnings with Stasher.": "Erhalten Sie ein kostenloses persönliches Onboarding und erfahren Sie, wie Sie Ihre Einnahmen mit Stasher maximieren.",
+    "Summary": "Zusammenfassung",
+    "I don't want a demo call — I'll set up Stasher by myself": "Ich möchte kein Demo-Gespräch – ich richte Stasher selbst ein",
+    "Welcome to Stasher Partners!": "Willkommen bei Stasher Partners!",
+    "Your account has been successfully created.": "Ihr Konto wurde erfolgreich erstellt.",
+    "We've sent a confirmation email to:": "Wir haben eine Bestätigungs-E-Mail gesendet an:",
+    "This email contains your unique referral link and instructions for adding it to your guest communications.": "Diese E-Mail enthält Ihren individuellen Empfehlungslink und Anweisungen für Ihre Gästekommunikation.",
+    "Go to dashboard": "Zum Dashboard",
+    "Return home": "Zurück zur Startseite",
+    "Helping hospitality partners create effortless luggage storage experiences for their guests.": "Wir helfen Hospitality-Partnern, ihren Gästen mühelose Gepäckaufbewahrung zu bieten.",
+    "How it works": "So funktioniert es",
+    "Get started": "Jetzt starten",
+    "Book a demo": "Demo buchen",
+    "Company": "Unternehmen",
+    "About Stasher": "Über Stasher",
+    "I want to store bags": "Ich möchte Gepäck lagern",
+    "Support": "Support",
+    "Help center": "Hilfe-Center",
+    "Contact": "Kontakt",
+    "Terms & Conditions": "Allgemeine Geschäftsbedingungen",
+    "© Stasher Ltd. All rights reserved.": "© Stasher Ltd. Alle Rechte vorbehalten."
+};
+
+const PLACEHOLDER_TRANSLATIONS_DE = {
+    "Enter your first name": "Geben Sie Ihren Vornamen ein",
+    "Enter your last name": "Geben Sie Ihren Nachnamen ein",
+    "your.email@example.com": "ihre.email@beispiel.com",
+    "Enter a secure password": "Geben Sie ein sicheres Passwort ein",
+    "e.g. London, New York, Paris": "z. B. London, New York, Paris",
+    "Start typing to find your country": "Beginnen Sie zu tippen, um Ihr Land zu finden",
+    "Enter your company name": "Geben Sie Ihren Firmennamen ein",
+    "https://www.example.com": "https://www.beispiel.com",
+    "e.g. 5, 10, 20": "z. B. 5, 10, 20",
+    "Tell us about your company, what you do, and how you help your clients...": "Beschreiben Sie Ihr Unternehmen, was Sie tun und wie Sie Ihren Kunden helfen..."
+};
+
+const TEXT_TRANSLATIONS_FR = {
+    "Join Stasher's Affiliate Program": "Rejoignez le programme d'affiliation Stasher",
+    "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aidez vos invités ou clients à stocker leurs bagages et recevez des revenus supplémentaires, une meilleure satisfaction client et de meilleures évaluations.",
+    "Totally Free to Join": "Entièrement gratuit",
+    "Takes Less Than 1 Minute": "Moins d'une minute",
+    "Get Started Now": "Commencer maintenant",
+    "Get started now": "Commencer maintenant",
+    "Already have an account?": "Vous avez déjà un compte ?",
+    "Login": "Connexion",
+    "Built for": "Conçu pour",
+    "Airbnb hosts": "Hôtes Airbnb",
+    "Travel blogs": "Blogs de voyage",
+    "Venues": "Lieux",
+    "Transportation": "Transport",
+    "STRs": "Locations courtes durées",
+    "Travel apps": "Applications de voyage",
+    "City guides": "Guides de ville",
+    "Events": "Événements",
+    "Why should you join the program?": "Pourquoi rejoindre le programme ?",
+    "Extra Revenue Stream": "Source de revenus supplémentaire",
+    "Receive 10% commission for every booking you generate via your referral link.": "Recevez 10 % de commission pour chaque réservation générée via votre lien de parrainage.",
+    "Customer Satisfaction": "Satisfaction client",
+    "Provide your guests or clients with a helpful service and make them happy.": "Offrez à vos invités ou clients un service utile et rendez-les heureux.",
+    "Global Coverage": "Couverture mondiale",
+    "Stasher is live with thousands of locations in more than 1,190 cities globally.": "Stasher est disponible dans des milliers d'emplacements dans plus de 1 190 villes dans le monde.",
+    "How does it work?": "Comment ça marche ?",
+    "Sign up for free": "Inscription gratuite",
+    "Create your account in under a minute. Fill out the form and you're ready to go.": "Créez votre compte en moins d'une minute. Remplissez le formulaire et c'est parti.",
+    "Receive your link": "Recevez votre lien",
+    "Get your referral link, discount code, and dashboard access. Everything is stored in your dashboard.": "Obtenez votre lien de parrainage, code de réduction et accès au tableau de bord. Tout est stocké dans votre tableau de bord.",
+    "Share Stasher": "Partagez Stasher",
+    "Share your link with customers through messages, guides, emails, or FAQs.": "Partagez votre lien avec vos clients via des messages, guides, e-mails ou FAQ.",
+    "Partnerships": "Partenariats",
+    "Trusted by top brands": "Approuvé par les grandes marques",
+    "Leading hospitality and travel companies trust Stasher to provide seamless luggage storage solutions for their customers.": "Les principales entreprises d'hôtellerie et de voyage font confiance à Stasher pour offrir des solutions de stockage de bagages sans faille à leurs clients.",
+    "Stasher in the Media": "Stasher dans les médias",
+    "Trusted by the travel industry's leading voices": "Approuvé par les voix de référence de l'industrie du voyage",
+    "Leading outlets highlight how Stasher helps hosts, property managers, and venues offer seamless baggage storage.": "Les principaux médias mettent en évidence comment Stasher aide les hôtes, gestionnaires de biens et lieux à offrir un stockage de bagages sans faille.",
+    "“A simple way for hospitality brands to add a valuable guest benefit.”": "“Une façon simple pour les marques hôtelières d'ajouter un avantage précieux pour les invités.”",
+    "— Forbes": "— Forbes",
+    "“Stasher bridges the gap between travelers and local businesses in minutes.”": "“Stasher comble le fossé entre les voyageurs et les entreprises locales en quelques minutes.”",
+    "— TechCrunch": "— TechCrunch",
+    "“Hosts boost revenue while keeping their guests delighted and stress-free.”": "“Les hôtes augmentent leurs revenus tout en gardant leurs invités ravis et sans stress.”",
+    "— BBC Travel": "— BBC Travel",
+    "Check our locations": "Consultez nos emplacements",
+    "Find secure luggage storage near you in just a few clicks.": "Trouvez un stockage de bagages sécurisé près de chez vous en quelques clics.",
+    "View locations": "Voir les emplacements",
+    "Secure & convenient locations": "Emplacements sécurisés et pratiques",
+    "Millions of bags stored safely": "Des millions de bagages stockés en toute sécurité",
+    "Excellent reviews": "Excellentes évaluations",
+    "Available 24/7": "Disponible 24h/24 et 7j/7",
+    "Frequently Asked Questions": "Questions fréquemment posées",
+    "Is it free to open an affiliate account?": "Est-ce gratuit d'ouvrir un compte d'affilié ?",
+    "Yes, it totally free.": "Oui, c'est entièrement gratuit.",
+    "Can I track bookings and performance?": "Puis-je suivre les réservations et les performances ?",
+    "Yes, once you sign up, you will receive an email with the login page to access your personal dashboard, where you can track clicks, conversions, CVR, and much more!": "Oui, une fois inscrit, vous recevrez un e-mail avec la page de connexion pour accéder à votre tableau de bord personnel, où vous pouvez suivre les clics, conversions, CVR et bien plus encore !",
+    "Where can I find my referral link or coupon code?": "Où puis-je trouver mon lien de parrainage ou code promo ?",
+    "You can find your referral link or coupon code in the email you received once your account is approved (it takes a few hours to 1 day since you signed up) or via your personal dashboard.": "Vous pouvez trouver votre lien de parrainage ou code promo dans l'e-mail reçu une fois votre compte approuvé (cela prend quelques heures à 1 jour depuis votre inscription) ou via votre tableau de bord personnel.",
+    "How and when do I get paid my commission?": "Comment et quand suis-je payé ma commission ?",
+    "In order to receive your commission, you have to enter your bank details by logging in to your dashboard (see instructions here). The commission is paid every month (the minimum threshold is 10 EUR / GBP / USD for the payout; if it is not met, you will receive the payment on the next payment until you reach the threshold).": "Pour recevoir votre commission, vous devez saisir vos coordonnées bancaires en vous connectant à votre tableau de bord (voir les instructions ici). La commission est payée chaque mois (le seuil minimum est de 10 EUR / GBP / USD pour le paiement ; s'il n'est pas atteint, vous recevrez le paiement au prochain versement jusqu'à atteindre le seuil).",
+    "Can I appear on your website as a partner?": "Puis-je apparaître sur votre site Web en tant que partenaire ?",
+    "Will I need to do a lot of administrative work?": "Devrai-je faire beaucoup de travail administratif ?",
+    "Certainly Not! The process is quite straightforward and efficient. It only takes a few minutes to set up. You simply need to add your referral link and coupon code to your guest communications. This can be done through various channels such as emails, your website, or any other relevant platform. Once this is done, you're all set and ready to go. There's minimal administrative work involved, making it a hassle-free addition to your communication strategy.": "Absolument pas ! Le processus est simple et efficace. Il ne faut que quelques minutes pour le configurer. Il vous suffit d'ajouter votre lien de parrainage et votre code promo à vos communications avec les invités. Cela peut être fait via divers canaux tels que les e-mails, votre site Web ou toute autre plateforme pertinente. Une fois cela fait, tout est prêt. Il y a un minimum de travail administratif, ce qui en fait un ajout sans tracas à votre stratégie de communication.",
+    "What criteria does Stasher consider for potential partners?": "Quels critères Stasher considère-t-il pour les partenaires potentiels ?",
+    "There are no specific criteria to consider for potential partners, if you have customers who need luggage storage or want to promote our service and gain commission, you are welcome. Sign up today and receive a 10% commission on every booking you generate.": "Il n'y a pas de critères spécifiques pour les partenaires potentiels. Si vous avez des clients qui ont besoin de stockage de bagages ou souhaitent promouvoir notre service et gagner une commission, vous êtes les bienvenus. Inscrivez-vous dès aujourd'hui et recevez 10 % de commission sur chaque réservation que vous générez.",
+    "Can I customize the service to fit my business needs?": "Puis-je personnaliser le service pour répondre aux besoins de mon entreprise ?",
+    "Yes, there are various customisation features depending on the type of collaboration, such as white-label options.": "Oui, il existe diverses fonctionnalités de personnalisation selon le type de collaboration, telles que les options white-label.",
+    "Are there marketing and promotional opportunities for partners?": "Y a-t-il des opportunités marketing et promotionnelles pour les partenaires ?",
+    "How can I stay informed about updates and changes in the partnership program?": "Comment puis-je rester informé des mises à jour et changements du programme de partenariat ?",
+    "Usually, we don't make any changes once you set up your account, but for any small changes or updates we will keep you posted via email.": "Généralement, nous n'apportons aucune modification une fois votre compte configuré, mais pour tout petit changement ou mise à jour, nous vous tiendrons informé par e-mail.",
+    "Do the affiliates/partners need to sign any contract/collaboration agreement?": "Les affiliés/partenaires doivent-ils signer un contrat/accord de collaboration ?",
+    "The only thing you have to do is accept the T&Cs once you sign up as an affiliate. If you need a contract, we can create one depending on your needs.": "La seule chose à faire est d'accepter les CGU une fois inscrit en tant qu'affilié. Si vous avez besoin d'un contrat, nous pouvons en créer un selon vos besoins.",
+    "How does customer support work?": "Comment fonctionne le support client ?",
+    "Could the booking be made for a few days and not only hours?": "La réservation peut-elle être faite pour plusieurs jours et pas seulement des heures ?",
+    "Yes, you can leave your bags for a few minutes up to a whole year.": "Oui, vous pouvez laisser vos bagages de quelques minutes à une année entière.",
+    "How do the Stashpoints know that they have received a booking?": "Comment les Stashpoints savent-ils qu'ils ont reçu une réservation ?",
+    "All of our partners get a confirmation email and an update instantly once you place your booking. So you can rest assured that the location will be waiting for you.": "Tous nos partenaires reçoivent un e-mail de confirmation et une mise à jour instantanément une fois votre réservation effectuée. Vous pouvez donc être sûr que l'emplacement vous attendra.",
+    "Program": "Programme",
+    "Company Type": "Type d'entreprise",
+    "Personal Info": "Informations personnelles",
+    "Company Details": "Détails de l'entreprise",
+    "Final Step": "Étape finale",
+    "Choose your preferred currency": "Choisissez votre devise préférée",
+    "US Dollar": "Dollar américain",
+    "Euro": "Euro",
+    "British Pound": "Livre sterling",
+    "Australian Dollar": "Dollar australien",
+    "Back to Home": "Retour à l'accueil",
+    "Continue": "Continuer",
+    "What Type of Company Are You?": "Quel type d'entreprise êtes-vous ?",
+    "Select the option that best describes your business": "Sélectionnez l'option qui décrit le mieux votre entreprise",
+    "I want to store bags (Supply)": "Je veux stocker des bagages (Supply)",
+    "Store bags and earn money for every bag you store.": "Stockez des bagages et gagnez de l'argent pour chaque bagage stocké.",
+    "Vacation Rental / STR / Airbnb Host": "Location de vacances / STR / Hôte Airbnb",
+    "Short-term rental property management and Airbnb Hosts.": "Gestion de locations de courte durée et hôtes Airbnb.",
+    "PMS": "PMS",
+    "Property Management System provider": "Fournisseur de système de gestion de propriétés",
+    "Venue": "Lieu",
+    "Museums, Stadiums, Theatres, Musical Events, etc.": "Musées, stades, théâtres, événements musicaux, etc.",
+    "Blog": "Blog",
+    "Travel blog or content creator": "Blog de voyage ou créateur de contenu",
+    "Other": "Autre",
+    "Other business type": "Autre type d'entreprise",
+    "Tour Operator": "Tour-opérateur",
+    "Transportations": "Transports",
+    "Back": "Retour",
+    "Personal Information": "Informations personnelles",
+    "Tell us about yourself": "Parlez-nous de vous",
+    "First Name *": "Prénom *",
+    "Last Name *": "Nom *",
+    "Email *": "E-mail *",
+    "Password *": "Mot de passe *",
+    "Minimum 8 characters": "Minimum 8 caractères",
+    "Company Details": "Détails de l'entreprise",
+    "Tell us about your company": "Parlez-nous de votre entreprise",
+    "City *": "Ville *",
+    "Country *": "Pays *",
+    "Company Name *": "Nom de l'entreprise *",
+    "Commission type *": "Type de commission *",
+    "Select commission type": "Sélectionner le type de commission",
+    "10% commission": "10 % de commission",
+    "10% discount code": "10 % de code de réduction",
+    "Custom": "Personnalisé",
+    "Company Website": "Site Web de l'entreprise",
+    "Number of Properties": "Nombre de propriétés",
+    "Company Description": "Description de l'entreprise",
+    "Name": "Nom",
+    "Email": "E-mail",
+    "Company Name": "Nom de l'entreprise",
+    "Location": "Emplacement",
+    "Website": "Site Web",
+    "Description": "Description",
+    "Final Step – Almost There!": "Étape finale – presque terminé !",
+    "Book a free demo call to get personalized onboarding.": "Réservez un appel de démonstration gratuit pour un onboarding personnalisé.",
+    "Book a Demo Call": "Réserver un appel de démonstration",
+    "Get a free personalized onboarding and learn how to maximize your earnings with Stasher.": "Obtenez un onboarding personnalisé gratuit et apprenez à maximiser vos revenus avec Stasher.",
+    "Summary": "Résumé",
+    "I don't want a demo call — I'll set up Stasher by myself": "Je ne veux pas d'appel de démonstration — je configurerai Stasher moi-même",
+    "Welcome to Stasher Partners!": "Bienvenue chez Stasher Partners !",
+    "Your account has been successfully created.": "Votre compte a été créé avec succès.",
+    "We've sent a confirmation email to:": "Nous avons envoyé un e-mail de confirmation à :",
+    "This email contains your unique referral link and instructions for adding it to your guest communications.": "Cet e-mail contient votre lien de parrainage unique et les instructions pour l'ajouter à vos communications avec les invités.",
+    "Go to dashboard": "Aller au tableau de bord",
+    "Return home": "Retour à l'accueil",
+    "Helping hospitality partners create effortless luggage storage experiences for their guests.": "Aider les partenaires hôteliers à créer des expériences de stockage de bagages sans effort pour leurs invités.",
+    "How it works": "Comment ça marche",
+    "Get started": "Commencer",
+    "Book a demo": "Réserver une démo",
+    "Company": "Entreprise",
+    "About Stasher": "À propos de Stasher",
+    "I want to store bags": "Je veux stocker des bagages",
+    "Support": "Support",
+    "Help center": "Centre d'aide",
+    "Contact": "Contact",
+    "Terms & Conditions": "Conditions générales",
+    "© Stasher Ltd. All rights reserved.": "© Stasher Ltd. Tous droits réservés."
+};
+
+const PLACEHOLDER_TRANSLATIONS_FR = {
+    "Enter your first name": "Entrez votre prénom",
+    "Enter your last name": "Entrez votre nom",
+    "your.email@example.com": "votre.email@exemple.com",
+    "Enter a secure password": "Entrez un mot de passe sécurisé",
+    "e.g. London, New York, Paris": "ex. Londres, New York, Paris",
+    "Start typing to find your country": "Commencez à taper pour trouver votre pays",
+    "Enter your company name": "Entrez le nom de votre entreprise",
+    "https://www.example.com": "https://www.exemple.com",
+    "e.g. 5, 10, 20": "ex. 5, 10, 20",
+    "Tell us about your company, what you do, and how you help your clients...": "Parlez-nous de votre entreprise, ce que vous faites et comment vous aidez vos clients..."
+};
+
+const TEXT_TRANSLATIONS_ES = {
+    "Join Stasher's Affiliate Program": "Únete al programa de afiliados de Stasher",
+    "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Ayuda a tus huéspedes o clientes a guardar sus maletas y recibe ingresos adicionales, mayor satisfacción del cliente y mejores reseñas.",
+    "Totally Free to Join": "Totalmente gratis",
+    "Takes Less Than 1 Minute": "Menos de 1 minuto",
+    "Get Started Now": "Comenzar ahora",
+    "Get started now": "Comenzar ahora",
+    "Already have an account?": "¿Ya tienes una cuenta?",
+    "Login": "Iniciar sesión",
+    "Built for": "Creado para",
+    "Airbnb hosts": "Anfitriones de Airbnb",
+    "Travel blogs": "Blogs de viajes",
+    "Venues": "Lugares",
+    "Transportation": "Transporte",
+    "STRs": "Alquileres de corta duración",
+    "Travel apps": "Aplicaciones de viajes",
+    "City guides": "Guías de ciudades",
+    "Events": "Eventos",
+    "Why should you join the program?": "¿Por qué deberías unirte al programa?",
+    "Extra Revenue Stream": "Fuente de ingresos adicional",
+    "Receive 10% commission for every booking you generate via your referral link.": "Recibe un 10% de comisión por cada reserva que generes a través de tu enlace de referencia.",
+    "Customer Satisfaction": "Satisfacción del cliente",
+    "Provide your guests or clients with a helpful service and make them happy.": "Proporciona a tus huéspedes o clientes un servicio útil y hazlos felices.",
+    "Global Coverage": "Cobertura global",
+    "Stasher is live with thousands of locations in more than 1,190 cities globally.": "Stasher está activo con miles de ubicaciones en más de 1.190 ciudades en todo el mundo.",
+    "How does it work?": "¿Cómo funciona?",
+    "Sign up for free": "Regístrate gratis",
+    "Create your account in under a minute. Fill out the form and you're ready to go.": "Crea tu cuenta en menos de un minuto. Completa el formulario y estarás listo.",
+    "Receive your link": "Recibe tu enlace",
+    "Get your referral link, discount code, and dashboard access. Everything is stored in your dashboard.": "Obtén tu enlace de referencia, código de descuento y acceso al panel. Todo se almacena en tu panel.",
+    "Share Stasher": "Comparte Stasher",
+    "Share your link with customers through messages, guides, emails, or FAQs.": "Comparte tu enlace con los clientes a través de mensajes, guías, correos electrónicos o preguntas frecuentes.",
+    "Partnerships": "Asociaciones",
+    "Trusted by top brands": "Con la confianza de las principales marcas",
+    "Leading hospitality and travel companies trust Stasher to provide seamless luggage storage solutions for their customers.": "Las principales empresas de hostelería y viajes confían en Stasher para ofrecer soluciones de almacenamiento de equipaje sin problemas a sus clientes.",
+    "Stasher in the Media": "Stasher en los medios",
+    "Trusted by the travel industry's leading voices": "Con la confianza de las voces líderes de la industria de viajes",
+    "Leading outlets highlight how Stasher helps hosts, property managers, and venues offer seamless baggage storage.": "Los principales medios destacan cómo Stasher ayuda a anfitriones, administradores de propiedades y lugares a ofrecer almacenamiento de equipaje sin problemas.",
+    "“A simple way for hospitality brands to add a valuable guest benefit.”": "“Una forma sencilla para que las marcas de hostelería agreguen un beneficio valioso para los huéspedes.”",
+    "— Forbes": "— Forbes",
+    "“Stasher bridges the gap between travelers and local businesses in minutes.”": "“Stasher cierra la brecha entre viajeros y empresas locales en minutos.”",
+    "— TechCrunch": "— TechCrunch",
+    "“Hosts boost revenue while keeping their guests delighted and stress-free.”": "“Los anfitriones aumentan los ingresos mientras mantienen a sus huéspedes encantados y sin estrés.”",
+    "— BBC Travel": "— BBC Travel",
+    "Check our locations": "Consulta nuestras ubicaciones",
+    "Find secure luggage storage near you in just a few clicks.": "Encuentra almacenamiento seguro de equipaje cerca de ti con solo unos clics.",
+    "View locations": "Ver ubicaciones",
+    "Secure & convenient locations": "Ubicaciones seguras y convenientes",
+    "Millions of bags stored safely": "Millones de maletas almacenadas de forma segura",
+    "Excellent reviews": "Reseñas excelentes",
+    "Available 24/7": "Disponible 24/7",
+    "Frequently Asked Questions": "Preguntas frecuentes",
+    "Is it free to open an affiliate account?": "¿Es gratis abrir una cuenta de afiliado?",
+    "Yes, it totally free.": "Sí, es totalmente gratis.",
+    "Can I track bookings and performance?": "¿Puedo rastrear reservas y rendimiento?",
+    "Yes, once you sign up, you will receive an email with the login page to access your personal dashboard, where you can track clicks, conversions, CVR, and much more!": "¡Sí, una vez que te registres, recibirás un correo electrónico con la página de inicio de sesión para acceder a tu panel personal, donde puedes rastrear clics, conversiones, CVR y mucho más!",
+    "Where can I find my referral link or coupon code?": "¿Dónde puedo encontrar mi enlace de referencia o código de cupón?",
+    "You can find your referral link or coupon code in the email you received once your account is approved (it takes a few hours to 1 day since you signed up) or via your personal dashboard.": "Puedes encontrar tu enlace de referencia o código de cupón en el correo electrónico que recibiste una vez que tu cuenta sea aprobada (tarda unas horas a 1 día desde que te registraste) o a través de tu panel personal.",
+    "How and when do I get paid my commission?": "¿Cómo y cuándo recibo el pago de mi comisión?",
+    "In order to receive your commission, you have to enter your bank details by logging in to your dashboard (see instructions here). The commission is paid every month (the minimum threshold is 10 EUR / GBP / USD for the payout; if it is not met, you will receive the payment on the next payment until you reach the threshold).": "Para recibir tu comisión, debes ingresar los datos de tu banco iniciando sesión en tu panel (ver instrucciones aquí). La comisión se paga cada mes (el umbral mínimo es de 10 EUR / GBP / USD para el pago; si no se alcanza, recibirás el pago en el próximo pago hasta alcanzar el umbral).",
+    "Can I appear on your website as a partner?": "¿Puedo aparecer en su sitio web como socio?",
+    "Will I need to do a lot of administrative work?": "¿Necesitaré hacer mucho trabajo administrativo?",
+    "Certainly Not! The process is quite straightforward and efficient. It only takes a few minutes to set up. You simply need to add your referral link and coupon code to your guest communications. This can be done through various channels such as emails, your website, or any other relevant platform. Once this is done, you're all set and ready to go. There's minimal administrative work involved, making it a hassle-free addition to your communication strategy.": "¡Por supuesto que no! El proceso es bastante sencillo y eficiente. Solo toma unos minutos configurarlo. Simplemente necesitas agregar tu enlace de referencia y código de cupón a tus comunicaciones con los huéspedes. Esto se puede hacer a través de varios canales como correos electrónicos, tu sitio web o cualquier otra plataforma relevante. Una vez hecho esto, todo está listo. Hay un trabajo administrativo mínimo involucrado, lo que lo convierte en una adición sin complicaciones a tu estrategia de comunicación.",
+    "What criteria does Stasher consider for potential partners?": "¿Qué criterios considera Stasher para los socios potenciales?",
+    "There are no specific criteria to consider for potential partners, if you have customers who need luggage storage or want to promote our service and gain commission, you are welcome. Sign up today and receive a 10% commission on every booking you generate.": "No hay criterios específicos para considerar para los socios potenciales. Si tienes clientes que necesitan almacenamiento de equipaje o quieres promocionar nuestro servicio y ganar comisión, eres bienvenido. Regístrate hoy y recibe un 10% de comisión por cada reserva que generes.",
+    "Can I customize the service to fit my business needs?": "¿Puedo personalizar el servicio para adaptarlo a las necesidades de mi negocio?",
+    "Yes, there are various customisation features depending on the type of collaboration, such as white-label options.": "Sí, hay varias funciones de personalización según el tipo de colaboración, como opciones de marca blanca.",
+    "Are there marketing and promotional opportunities for partners?": "¿Hay oportunidades de marketing y promoción para los socios?",
+    "How can I stay informed about updates and changes in the partnership program?": "¿Cómo puedo mantenerme informado sobre actualizaciones y cambios en el programa de asociación?",
+    "Usually, we don't make any changes once you set up your account, but for any small changes or updates we will keep you posted via email.": "Por lo general, no hacemos ningún cambio una vez que configuras tu cuenta, pero para cualquier cambio pequeño o actualización te mantendremos informado por correo electrónico.",
+    "Do the affiliates/partners need to sign any contract/collaboration agreement?": "¿Los afiliados/socios necesitan firmar algún contrato/acuerdo de colaboración?",
+    "The only thing you have to do is accept the T&Cs once you sign up as an affiliate. If you need a contract, we can create one depending on your needs.": "Lo único que tienes que hacer es aceptar los Términos y Condiciones una vez que te registres como afiliado. Si necesitas un contrato, podemos crear uno según tus necesidades.",
+    "How does customer support work?": "¿Cómo funciona el soporte al cliente?",
+    "Could the booking be made for a few days and not only hours?": "¿Se puede hacer la reserva por varios días y no solo por horas?",
+    "Yes, you can leave your bags for a few minutes up to a whole year.": "Sí, puedes dejar tus maletas desde unos minutos hasta un año completo.",
+    "How do the Stashpoints know that they have received a booking?": "¿Cómo saben los Stashpoints que han recibido una reserva?",
+    "All of our partners get a confirmation email and an update instantly once you place your booking. So you can rest assured that the location will be waiting for you.": "Todos nuestros socios reciben un correo electrónico de confirmación y una actualización instantáneamente una vez que realizas tu reserva. Así que puedes estar seguro de que la ubicación te estará esperando.",
+    "Program": "Programa",
+    "Company Type": "Tipo de empresa",
+    "Personal Info": "Información personal",
+    "Company Details": "Detalles de la empresa",
+    "Final Step": "Paso final",
+    "Choose your preferred currency": "Elige tu moneda preferida",
+    "US Dollar": "Dólar estadounidense",
+    "Euro": "Euro",
+    "British Pound": "Libra esterlina",
+    "Australian Dollar": "Dólar australiano",
+    "Back to Home": "Volver al inicio",
+    "Continue": "Continuar",
+    "What Type of Company Are You?": "¿Qué tipo de empresa eres?",
+    "Select the option that best describes your business": "Selecciona la opción que mejor describa tu negocio",
+    "I want to store bags (Supply)": "Quiero almacenar maletas (Oferta)",
+    "Store bags and earn money for every bag you store.": "Almacena maletas y gana dinero por cada maleta que almacenes.",
+    "Vacation Rental / STR / Airbnb Host": "Alquiler vacacional / STR / Anfitrión de Airbnb",
+    "Short-term rental property management and Airbnb Hosts.": "Gestión de propiedades de alquiler de corta duración y anfitriones de Airbnb.",
+    "PMS": "PMS",
+    "Property Management System provider": "Proveedor de sistema de gestión de propiedades",
+    "Venue": "Lugar",
+    "Museums, Stadiums, Theatres, Musical Events, etc.": "Museos, estadios, teatros, eventos musicales, etc.",
+    "Blog": "Blog",
+    "Travel blog or content creator": "Blog de viajes o creador de contenido",
+    "Other": "Otro",
+    "Other business type": "Otro tipo de negocio",
+    "Tour Operator": "Operador turístico",
+    "Transportations": "Transportes",
+    "Back": "Atrás",
+    "Personal Information": "Información personal",
+    "Tell us about yourself": "Cuéntanos sobre ti",
+    "First Name *": "Nombre *",
+    "Last Name *": "Apellido *",
+    "Email *": "Correo electrónico *",
+    "Password *": "Contraseña *",
+    "Minimum 8 characters": "Mínimo 8 caracteres",
+    "Company Details": "Detalles de la empresa",
+    "Tell us about your company": "Cuéntanos sobre tu empresa",
+    "City *": "Ciudad *",
+    "Country *": "País *",
+    "Company Name *": "Nombre de la empresa *",
+    "Commission type *": "Tipo de comisión *",
+    "Select commission type": "Seleccionar tipo de comisión",
+    "10% commission": "10% de comisión",
+    "10% discount code": "10% de código de descuento",
+    "Custom": "Personalizado",
+    "Company Website": "Sitio web de la empresa",
+    "Number of Properties": "Número de propiedades",
+    "Company Description": "Descripción de la empresa",
+    "Name": "Nombre",
+    "Email": "Correo electrónico",
+    "Company Name": "Nombre de la empresa",
+    "Location": "Ubicación",
+    "Website": "Sitio web",
+    "Description": "Descripción",
+    "Final Step – Almost There!": "¡Paso final - casi terminado!",
+    "Book a free demo call to get personalized onboarding.": "Reserva una llamada de demostración gratuita para obtener una incorporación personalizada.",
+    "Book a Demo Call": "Reservar una llamada de demostración",
+    "Get a free personalized onboarding and learn how to maximize your earnings with Stasher.": "Obtén una incorporación personalizada gratuita y aprende cómo maximizar tus ganancias con Stasher.",
+    "Summary": "Resumen",
+    "I don't want a demo call — I'll set up Stasher by myself": "No quiero una llamada de demostración — configuraré Stasher yo mismo",
+    "Welcome to Stasher Partners!": "¡Bienvenido a Stasher Partners!",
+    "Your account has been successfully created.": "Tu cuenta ha sido creada exitosamente.",
+    "We've sent a confirmation email to:": "Hemos enviado un correo electrónico de confirmación a:",
+    "This email contains your unique referral link and instructions for adding it to your guest communications.": "Este correo electrónico contiene tu enlace de referencia único e instrucciones para agregarlo a tus comunicaciones con los huéspedes.",
+    "Go to dashboard": "Ir al panel",
+    "Return home": "Volver al inicio",
+    "Helping hospitality partners create effortless luggage storage experiences for their guests.": "Ayudando a los socios de hostelería a crear experiencias de almacenamiento de equipaje sin esfuerzo para sus huéspedes.",
+    "How it works": "Cómo funciona",
+    "Get started": "Comenzar",
+    "Book a demo": "Reservar una demostración",
+    "Company": "Empresa",
+    "About Stasher": "Acerca de Stasher",
+    "I want to store bags": "Quiero almacenar maletas",
+    "Support": "Soporte",
+    "Help center": "Centro de ayuda",
+    "Contact": "Contacto",
+    "Terms & Conditions": "Términos y condiciones",
+    "© Stasher Ltd. All rights reserved.": "© Stasher Ltd. Todos los derechos reservados."
+};
+
+const TEXT_TRANSLATIONS_IT = {
+    "Join Stasher's Affiliate Program": "Unisciti al programma di affiliazione Stasher",
+    "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aiuta i tuoi ospiti o clienti a conservare i bagagli e ricevi entrate extra, maggiore soddisfazione del cliente e recensioni migliori.",
+    "Totally Free to Join": "Completamente gratuito",
+    "Takes Less Than 1 Minute": "Meno di 1 minuto",
+    "Get Started Now": "Inizia ora",
+    "Get started now": "Inizia ora",
+    "Already have an account?": "Hai già un account?",
+    "Login": "Accedi",
+    "Built for": "Creato per",
+    "Airbnb hosts": "Host Airbnb",
+    "Travel blogs": "Blog di viaggio",
+    "Venues": "Luoghi",
+    "Transportation": "Trasporti",
+    "STRs": "Affitti a breve termine",
+    "Travel apps": "App di viaggio",
+    "City guides": "Guide della città",
+    "Events": "Eventi",
+    "Why should you join the program?": "Perché dovresti unirti al programma?",
+    "Extra Revenue Stream": "Fonte di entrate aggiuntiva",
+    "Receive 10% commission for every booking you generate via your referral link.": "Ricevi una commissione del 10% per ogni prenotazione che generi tramite il tuo link di riferimento.",
+    "Customer Satisfaction": "Soddisfazione del cliente",
+    "Provide your guests or clients with a helpful service and make them happy.": "Fornisci ai tuoi ospiti o clienti un servizio utile e rendili felici.",
+    "Global Coverage": "Copertura globale",
+    "Stasher is live with thousands of locations in more than 1,190 cities globally.": "Stasher è attivo con migliaia di ubicazioni in più di 1.190 città in tutto il mondo.",
+    "How does it work?": "Come funziona?",
+    "Sign up for free": "Registrati gratuitamente",
+    "Create your account in under a minute. Fill out the form and you're ready to go.": "Crea il tuo account in meno di un minuto. Compila il modulo e sei pronto.",
+    "Receive your link": "Ricevi il tuo link",
+    "Get your referral link, discount code, and dashboard access. Everything is stored in your dashboard.": "Ottieni il tuo link di riferimento, codice sconto e accesso alla dashboard. Tutto è memorizzato nella tua dashboard.",
+    "Share Stasher": "Condividi Stasher",
+    "Share your link with customers through messages, guides, emails, or FAQs.": "Condividi il tuo link con i clienti tramite messaggi, guide, email o FAQ.",
+    "Partnerships": "Partnership",
+    "Trusted by top brands": "Fidato dai principali brand",
+    "Leading hospitality and travel companies trust Stasher to provide seamless luggage storage solutions for their customers.": "Le principali aziende di ospitalità e viaggi si fidano di Stasher per fornire soluzioni di deposito bagagli senza problemi ai loro clienti.",
+    "Stasher in the Media": "Stasher nei media",
+    "Trusted by the travel industry's leading voices": "Fidato dalle voci leader dell'industria dei viaggi",
+    "Leading outlets highlight how Stasher helps hosts, property managers, and venues offer seamless baggage storage.": "I principali media evidenziano come Stasher aiuta host, gestori di proprietà e luoghi a offrire deposito bagagli senza problemi.",
+    "“A simple way for hospitality brands to add a valuable guest benefit.”": "“Un modo semplice per i brand dell'ospitalità di aggiungere un vantaggio prezioso per gli ospiti.”",
+    "— Forbes": "— Forbes",
+    "“Stasher bridges the gap between travelers and local businesses in minutes.”": "“Stasher colma il divario tra viaggiatori e aziende locali in pochi minuti.”",
+    "— TechCrunch": "— TechCrunch",
+    "“Hosts boost revenue while keeping their guests delighted and stress-free.”": "“Gli host aumentano i ricavi mantenendo i loro ospiti felici e senza stress.”",
+    "— BBC Travel": "— BBC Travel",
+    "Check our locations": "Controlla le nostre ubicazioni",
+    "Find secure luggage storage near you in just a few clicks.": "Trova deposito bagagli sicuro vicino a te con pochi clic.",
+    "View locations": "Visualizza ubicazioni",
+    "Secure & convenient locations": "Ubicazioni sicure e convenienti",
+    "Millions of bags stored safely": "Milioni di bagagli conservati in sicurezza",
+    "Excellent reviews": "Recensioni eccellenti",
+    "Available 24/7": "Disponibile 24/7",
+    "Frequently Asked Questions": "Domande frequenti",
+    "Is it free to open an affiliate account?": "È gratuito aprire un account affiliato?",
+    "Yes, it totally free.": "Sì, è completamente gratuito.",
+    "Can I track bookings and performance?": "Posso tracciare prenotazioni e prestazioni?",
+    "Yes, once you sign up, you will receive an email with the login page to access your personal dashboard, where you can track clicks, conversions, CVR, and much more!": "Sì, una volta registrato, riceverai un'email con la pagina di accesso per accedere alla tua dashboard personale, dove puoi tracciare clic, conversioni, CVR e molto altro!",
+    "Where can I find my referral link or coupon code?": "Dove posso trovare il mio link di riferimento o codice coupon?",
+    "You can find your referral link or coupon code in the email you received once your account is approved (it takes a few hours to 1 day since you signed up) or via your personal dashboard.": "Puoi trovare il tuo link di riferimento o codice coupon nell'email che hai ricevuto una volta che il tuo account è stato approvato (ci vogliono poche ore a 1 giorno da quando ti sei registrato) o tramite la tua dashboard personale.",
+    "How and when do I get paid my commission?": "Come e quando ricevo il pagamento della mia commissione?",
+    "In order to receive your commission, you have to enter your bank details by logging in to your dashboard (see instructions here). The commission is paid every month (the minimum threshold is 10 EUR / GBP / USD for the payout; if it is not met, you will receive the payment on the next payment until you reach the threshold).": "Per ricevere la tua commissione, devi inserire i dettagli bancari accedendo alla tua dashboard (vedi istruzioni qui). La commissione viene pagata ogni mese (la soglia minima è di 10 EUR / GBP / USD per il pagamento; se non viene raggiunta, riceverai il pagamento al prossimo pagamento fino a raggiungere la soglia).",
+    "Can I appear on your website as a partner?": "Posso apparire sul tuo sito web come partner?",
+    "Will I need to do a lot of administrative work?": "Dovrò fare molto lavoro amministrativo?",
+    "Certainly Not! The process is quite straightforward and efficient. It only takes a few minutes to set up. You simply need to add your referral link and coupon code to your guest communications. This can be done through various channels such as emails, your website, or any other relevant platform. Once this is done, you're all set and ready to go. There's minimal administrative work involved, making it a hassle-free addition to your communication strategy.": "Assolutamente no! Il processo è abbastanza semplice ed efficiente. Ci vogliono solo pochi minuti per configurarlo. Devi semplicemente aggiungere il tuo link di riferimento e codice coupon alle tue comunicazioni con gli ospiti. Questo può essere fatto tramite vari canali come email, il tuo sito web o qualsiasi altra piattaforma rilevante. Una volta fatto, sei pronto. C'è un lavoro amministrativo minimo coinvolto, rendendolo un'aggiunta senza problemi alla tua strategia di comunicazione.",
+    "What criteria does Stasher consider for potential partners?": "Quali criteri considera Stasher per i potenziali partner?",
+    "There are no specific criteria to consider for potential partners, if you have customers who need luggage storage or want to promote our service and gain commission, you are welcome. Sign up today and receive a 10% commission on every booking you generate.": "Non ci sono criteri specifici da considerare per i potenziali partner. Se hai clienti che necessitano di deposito bagagli o vuoi promuovere il nostro servizio e guadagnare commissioni, sei il benvenuto. Registrati oggi e ricevi una commissione del 10% su ogni prenotazione che generi.",
+    "Can I customize the service to fit my business needs?": "Posso personalizzare il servizio per adattarlo alle esigenze della mia attività?",
+    "Yes, there are various customisation features depending on the type of collaboration, such as white-label options.": "Sì, ci sono varie funzionalità di personalizzazione a seconda del tipo di collaborazione, come opzioni white-label.",
+    "Are there marketing and promotional opportunities for partners?": "Ci sono opportunità di marketing e promozione per i partner?",
+    "How can I stay informed about updates and changes in the partnership program?": "Come posso rimanere informato su aggiornamenti e modifiche al programma di partnership?",
+    "Usually, we don't make any changes once you set up your account, but for any small changes or updates we will keep you posted via email.": "Di solito, non apportiamo modifiche una volta configurato il tuo account, ma per eventuali piccole modifiche o aggiornamenti ti terremo informato via email.",
+    "Do the affiliates/partners need to sign any contract/collaboration agreement?": "Gli affiliati/partner devono firmare qualche contratto/accordo di collaborazione?",
+    "The only thing you have to do is accept the T&Cs once you sign up as an affiliate. If you need a contract, we can create one depending on your needs.": "L'unica cosa che devi fare è accettare i Termini e Condizioni una volta registrato come affiliato. Se hai bisogno di un contratto, possiamo crearne uno in base alle tue esigenze.",
+    "How does customer support work?": "Come funziona il supporto clienti?",
+    "Could the booking be made for a few days and not only hours?": "La prenotazione può essere fatta per alcuni giorni e non solo per ore?",
+    "Yes, you can leave your bags for a few minutes up to a whole year.": "Sì, puoi lasciare i tuoi bagagli da pochi minuti fino a un anno intero.",
+    "How do the Stashpoints know that they have received a booking?": "Come fanno i Stashpoints a sapere che hanno ricevuto una prenotazione?",
+    "All of our partners get a confirmation email and an update instantly once you place your booking. So you can rest assured that the location will be waiting for you.": "Tutti i nostri partner ricevono un'email di conferma e un aggiornamento istantaneamente una volta effettuata la prenotazione. Quindi puoi stare certo che la ubicazione ti aspetterà.",
+    "Program": "Programma",
+    "Company Type": "Tipo di azienda",
+    "Personal Info": "Informazioni personali",
+    "Company Details": "Dettagli dell'azienda",
+    "Final Step": "Passo finale",
+    "Choose your preferred currency": "Scegli la tua valuta preferita",
+    "US Dollar": "Dollaro statunitense",
+    "Euro": "Euro",
+    "British Pound": "Sterlina britannica",
+    "Australian Dollar": "Dollaro australiano",
+    "Back to Home": "Torna alla home",
+    "Continue": "Continua",
+    "What Type of Company Are You?": "Che tipo di azienda sei?",
+    "Select the option that best describes your business": "Seleziona l'opzione che meglio descrive la tua attività",
+    "I want to store bags (Supply)": "Voglio conservare bagagli (Fornitura)",
+    "Store bags and earn money for every bag you store.": "Conserva bagagli e guadagna denaro per ogni bagaglio che conservi.",
+    "Vacation Rental / STR / Airbnb Host": "Affitto vacanze / STR / Host Airbnb",
+    "Short-term rental property management and Airbnb Hosts.": "Gestione di proprietà in affitto a breve termine e Host Airbnb.",
+    "PMS": "PMS",
+    "Property Management System provider": "Fornitore di sistema di gestione proprietà",
+    "Venue": "Luogo",
+    "Museums, Stadiums, Theatres, Musical Events, etc.": "Musei, stadi, teatri, eventi musicali, ecc.",
+    "Blog": "Blog",
+    "Travel blog or content creator": "Blog di viaggio o creatore di contenuti",
+    "Other": "Altro",
+    "Other business type": "Altro tipo di attività",
+    "Tour Operator": "Tour operator",
+    "Transportations": "Trasporti",
+    "Back": "Indietro",
+    "Personal Information": "Informazioni personali",
+    "Tell us about yourself": "Raccontaci di te",
+    "First Name *": "Nome *",
+    "Last Name *": "Cognome *",
+    "Email *": "Email *",
+    "Password *": "Password *",
+    "Minimum 8 characters": "Minimo 8 caratteri",
+    "Company Details": "Dettagli dell'azienda",
+    "Tell us about your company": "Raccontaci della tua azienda",
+    "City *": "Città *",
+    "Country *": "Paese *",
+    "Company Name *": "Nome dell'azienda *",
+    "Commission type *": "Tipo di commissione *",
+    "Select commission type": "Seleziona tipo di commissione",
+    "10% commission": "10% di commissione",
+    "10% discount code": "10% di codice sconto",
+    "Custom": "Personalizzato",
+    "Company Website": "Sito web dell'azienda",
+    "Number of Properties": "Numero di proprietà",
+    "Company Description": "Descrizione dell'azienda",
+    "Name": "Nome",
+    "Email": "Email",
+    "Company Name": "Nome dell'azienda",
+    "Location": "Ubicazione",
+    "Website": "Sito web",
+    "Description": "Descrizione",
+    "Final Step – Almost There!": "Passo finale – quasi fatto!",
+    "Book a free demo call to get personalized onboarding.": "Prenota una chiamata demo gratuita per ottenere un onboarding personalizzato.",
+    "Book a Demo Call": "Prenota una chiamata demo",
+    "Get a free personalized onboarding and learn how to maximize your earnings with Stasher.": "Ottieni un onboarding personalizzato gratuito e impara come massimizzare i tuoi guadagni con Stasher.",
+    "Summary": "Riepilogo",
+    "I don't want a demo call — I'll set up Stasher by myself": "Non voglio una chiamata demo — configurerò Stasher da solo",
+    "Welcome to Stasher Partners!": "Benvenuto in Stasher Partners!",
+    "Your account has been successfully created.": "Il tuo account è stato creato con successo.",
+    "We've sent a confirmation email to:": "Abbiamo inviato un'email di conferma a:",
+    "This email contains your unique referral link and instructions for adding it to your guest communications.": "Questa email contiene il tuo link di riferimento unico e le istruzioni per aggiungerlo alle tue comunicazioni con gli ospiti.",
+    "Go to dashboard": "Vai alla dashboard",
+    "Return home": "Torna alla home",
+    "Helping hospitality partners create effortless luggage storage experiences for their guests.": "Aiutare i partner dell'ospitalità a creare esperienze di deposito bagagli senza sforzo per i loro ospiti.",
+    "How it works": "Come funziona",
+    "Get started": "Inizia",
+    "Book a demo": "Prenota una demo",
+    "Company": "Azienda",
+    "About Stasher": "Informazioni su Stasher",
+    "I want to store bags": "Voglio conservare bagagli",
+    "Support": "Supporto",
+    "Help center": "Centro assistenza",
+    "Contact": "Contatto",
+    "Terms & Conditions": "Termini e condizioni",
+    "© Stasher Ltd. All rights reserved.": "© Stasher Ltd. Tutti i diritti riservati."
+};
+
+const PLACEHOLDER_TRANSLATIONS_ES = {
+    "Enter your first name": "Ingresa tu nombre",
+    "Enter your last name": "Ingresa tu apellido",
+    "your.email@example.com": "tu.email@ejemplo.com",
+    "Enter a secure password": "Ingresa una contraseña segura",
+    "e.g. London, New York, Paris": "ej. Londres, Nueva York, París",
+    "Start typing to find your country": "Comienza a escribir para encontrar tu país",
+    "Enter your company name": "Ingresa el nombre de tu empresa",
+    "https://www.example.com": "https://www.ejemplo.com",
+    "e.g. 5, 10, 20": "ej. 5, 10, 20",
+    "Tell us about your company, what you do, and how you help your clients...": "Cuéntanos sobre tu empresa, qué haces y cómo ayudas a tus clientes..."
+};
+
+const PLACEHOLDER_TRANSLATIONS_IT = {
+    "Enter your first name": "Inserisci il tuo nome",
+    "Enter your last name": "Inserisci il tuo cognome",
+    "your.email@example.com": "tua.email@esempio.com",
+    "Enter a secure password": "Inserisci una password sicura",
+    "e.g. London, New York, Paris": "es. Londra, New York, Parigi",
+    "Start typing to find your country": "Inizia a digitare per trovare il tuo paese",
+    "Enter your company name": "Inserisci il nome della tua azienda",
+    "https://www.example.com": "https://www.esempio.com",
+    "e.g. 5, 10, 20": "es. 5, 10, 20",
+    "Tell us about your company, what you do, and how you help your clients...": "Raccontaci della tua azienda, cosa fai e come aiuti i tuoi clienti..."
+};
+
+const HTML_TRANSLATIONS = [
+    {
+        selector: '.faq-item:nth-child(5) .faq-answer p',
+        de: 'Das hängt von der Art Ihres Unternehmens ab, aber Sie können jederzeit unter <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a> nach verfügbaren Möglichkeiten fragen.',
+        fr: 'Cela dépend du type d\'entreprise, mais vous pouvez toujours contacter <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a> pour voir quelles opportunités sont disponibles.',
+        es: 'Depende del tipo de empresa, pero siempre puedes contactar <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a> para ver qué oportunidades están disponibles.',
+        it: 'Dipende dal tipo di azienda, ma puoi sempre contattare <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a> per vedere quali opportunità sono disponibili.'
+    },
+    {
+        selector: '.faq-item:nth-child(9) .faq-answer p',
+        de: 'Ja, wir bieten Marketing- und Promotion-Möglichkeiten für unsere Partner an. Weitere Informationen erhalten Sie unter <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>.',
+        fr: 'Oui, nous offrons des opportunités marketing et promotionnelles à nos partenaires. Pour plus d\'informations, veuillez contacter <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>.',
+        es: 'Sí, ofrecemos oportunidades de marketing y promoción para nuestros socios. Para más información, contacta <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>.',
+        it: 'Sì, offriamo opportunità di marketing e promozione per i nostri partner. Per maggiori informazioni, contatta <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>.'
+    },
+    {
+        selector: '.faq-item:nth-child(12) .faq-answer p',
+        de: 'Der Kundensupport ist rund um die Uhr per Telefon, Chat oder E-Mail erreichbar. Sie können den Support <a href="https://stasher.com/support" target="_blank">hier</a> kontaktieren.',
+        fr: 'Le support client fonctionne 24h/24 et 7j/7 par téléphone, chat ou e-mail. Vous pouvez contacter le support <a href="https://stasher.com/support" target="_blank">ici</a>.',
+        es: 'El soporte al cliente está disponible las 24 horas del día, los 7 días de la semana por teléfono, chat o correo electrónico. Puedes contactar al soporte <a href="https://stasher.com/support" target="_blank">aquí</a>.',
+        it: 'Il supporto clienti è disponibile 24 ore su 24, 7 giorni su 7 tramite telefono, chat o email. Puoi contattare il supporto <a href="https://stasher.com/support" target="_blank">qui</a>.'
+    },
+    {
+        selector: '.confirmation-support',
+        de: 'Brauchen Sie Hilfe? Schreiben Sie an <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>',
+        fr: 'Besoin d\'aide ? Envoyez un e-mail à <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>',
+        es: '¿Necesitas ayuda? Envía un correo electrónico a <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>',
+        it: 'Hai bisogno di aiuto? Invia un\'email a <a href="mailto:partnerships@stasher.com">partnerships@stasher.com</a>'
+    },
+    {
+        selector: 'label[for="companyWebsite"]',
+        de: 'Firmenwebsite <span class="optional">(optional)</span>',
+        fr: 'Site Web de l\'entreprise <span class="optional">(optionnel)</span>',
+        es: 'Sitio web de la empresa <span class="optional">(opcional)</span>',
+        it: 'Sito web dell\'azienda <span class="optional">(opzionale)</span>'
+    },
+    {
+        selector: 'label[for="numberOfProperties"]',
+        de: 'Anzahl der Immobilien <span class="optional">(optional, nur für STRs)</span>',
+        fr: 'Nombre de propriétés <span class="optional">(optionnel, uniquement pour les STR)</span>',
+        es: 'Número de propiedades <span class="optional">(opcional, solo para STR)</span>',
+        it: 'Numero di proprietà <span class="optional">(opzionale, solo per STR)</span>'
+    },
+    {
+        selector: 'label[for="companyWebsite2"]',
+        de: 'Firmenwebsite <span class="optional">(optional)</span>',
+        fr: 'Site Web de l\'entreprise <span class="optional">(optionnel)</span>',
+        es: 'Sitio web de la empresa <span class="optional">(opcional)</span>',
+        it: 'Sito web dell\'azienda <span class="optional">(opzionale)</span>'
+    },
+    {
+        selector: 'label[for="companyDescription"]',
+        de: 'Firmenbeschreibung <span class="optional">(optional)</span>',
+        fr: 'Description de l\'entreprise <span class="optional">(optionnel)</span>',
+        es: 'Descripción de la empresa <span class="optional">(opcional)</span>',
+        it: 'Descrizione dell\'azienda <span class="optional">(opzionale)</span>'
+    }
+];
+
+const VALIDATION_TRANSLATIONS = {
+    selectCountry: {
+        en: 'Please select a country from the list',
+        de: 'Bitte wählen Sie ein Land aus der Liste aus',
+        fr: 'Veuillez sélectionner un pays dans la liste',
+        es: 'Por favor selecciona un país de la lista',
+        it: 'Si prega di selezionare un paese dall\'elenco'
+    }
+};
+
+const textTranslationRegistry = {};
+const placeholderTranslationRegistry = {};
+const htmlTranslationRegistry = [];
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     initializeLandingPage();
@@ -164,6 +969,7 @@ document.addEventListener('DOMContentLoaded', function() {
     populateCountries();
     setupEventListeners();
     setupProgressBarNavigation();
+    initI18n();
 });
 
 // Initialize Landing Page
@@ -190,10 +996,10 @@ function initializeLandingPage() {
         });
     }
 
-    // Get started button in "Check our locations" section
-    const getStartedLocations = document.getElementById('getStartedLocations');
-    if (getStartedLocations) {
-        getStartedLocations.addEventListener('click', function() {
+    // Final "Get started now" button after FAQs
+    const finalGetStartedBtn = document.getElementById('finalGetStartedBtn');
+    if (finalGetStartedBtn) {
+        finalGetStartedBtn.addEventListener('click', function() {
             showSignupForm();
         });
     }
@@ -219,6 +1025,41 @@ function initializeLandingPage() {
             goBackToLandingPage();
         });
     }
+
+    // Initialize FAQs toggle functionality
+    initializeFAQs();
+
+    // Initialize "Built For" section redirects
+    initializeBuiltForRedirects();
+}
+
+// Initialize FAQs Toggle Functionality
+function initializeFAQs() {
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    faqQuestions.forEach(question => {
+        question.addEventListener('click', function() {
+            const faqItem = this.closest('.faq-item');
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all other FAQ items (optional - remove if you want multiple open)
+            document.querySelectorAll('.faq-item').forEach(item => {
+                if (item !== faqItem) {
+                    item.classList.remove('active');
+                    item.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Toggle current FAQ item
+            if (isActive) {
+                faqItem.classList.remove('active');
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                faqItem.classList.add('active');
+                this.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
 }
 
 // Show Signup Form (hide landing page)
@@ -237,8 +1078,63 @@ function showSignupForm() {
         formContainer.style.display = 'block';
     }
     
+    // Start on Page 1 (Company Type)
+    formState.currentPage = 1;
+    showPage(1);
+    updateProgressBar(1);
+    updateContinueButton(1);
+    
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Redirect to Page 2 with preselected company type
+function redirectToPage2WithCompanyType(companyType) {
+    // Set the company type in form state
+    formState.companyType = companyType;
+    
+    // Show the signup form
+    const landingPage = document.getElementById('landingPage');
+    const progressContainer = document.getElementById('progressContainer');
+    const formContainer = document.getElementById('formContainer');
+    
+    if (landingPage) {
+        landingPage.style.display = 'none';
+    }
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+    }
+    if (formContainer) {
+        formContainer.style.display = 'block';
+    }
+    
+    // Visually select the company type box on Page 1
+    document.querySelectorAll('.company-type-box').forEach(box => {
+        box.classList.remove('selected');
+        if (box.dataset.type === companyType) {
+            box.classList.add('selected');
+        }
+    });
+    
+    // Skip to Page 2 (Program Selection)
+    formState.currentPage = 2;
+    showPage(2);
+    updateProgressBar(2);
+    updateContinueButton(2);
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Initialize "Built For" section redirects
+function initializeBuiltForRedirects() {
+    document.querySelectorAll('.company-type-item[data-redirect-type]').forEach(item => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', function() {
+            const companyType = this.dataset.redirectType;
+            redirectToPage2WithCompanyType(companyType);
+        });
+    });
 }
 
 // Go back to landing page (from signup form)
@@ -269,6 +1165,7 @@ function goBackToLandingPage() {
 
 // Initialize Form
 function initializeForm() {
+    // Start on Page 1 (now Company Type)
     showPage(1);
     updateProgressBar(1);
     updateContinueButton(1);
@@ -308,7 +1205,7 @@ function validateCountryInput(input) {
     if (!input) return false;
     const value = input.value.trim();
     if (value === '') {
-        input.setCustomValidity('Please select a country from the list');
+        input.setCustomValidity(getValidationMessage('selectCountry'));
         // Update formState based on which input this is
         if (input.id === 'country') {
             formState.country = '';
@@ -327,7 +1224,7 @@ function validateCountryInput(input) {
         updateContinueButton(4);
         return true;
     } else {
-        input.setCustomValidity('Please select a country from the list');
+        input.setCustomValidity(getValidationMessage('selectCountry'));
         // Update formState based on which input this is
         if (input.id === 'country') {
             formState.country = '';
@@ -353,6 +1250,7 @@ function setupEventListeners() {
         if (flag && currentLanguageFlag) {
             currentLanguageFlag.textContent = flag;
         }
+        applyTranslations(formState.language);
     });
     
     // Initialize flag on page load
@@ -362,17 +1260,17 @@ function setupEventListeners() {
         currentLanguageFlag.textContent = initialFlag;
     }
 
-    // Page 1: Program Selection
+    // Page 2: Program Selection (now second step)
     document.querySelectorAll('.currency-box').forEach(box => {
         box.addEventListener('click', function() {
             document.querySelectorAll('.currency-box').forEach(b => b.classList.remove('selected'));
             this.classList.add('selected');
             formState.program = this.dataset.currency;
-            updateContinueButton(1);
+            updateContinueButton(2);
             
             // Auto-advance to next page
             setTimeout(() => {
-                if (validatePage1()) {
+                if (validatePage2()) {
                     nextPage();
                 }
             }, 300);
@@ -417,9 +1315,36 @@ function setupEventListeners() {
         }
     });
 
-    // Continue Button 1
+    // Page 1: Company Type (now first step)
+    document.querySelectorAll('.company-type-box').forEach(box => {
+        box.addEventListener('click', function() {
+            document.querySelectorAll('.company-type-box').forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            formState.companyType = this.dataset.type;
+            updateContinueButton(1);
+            
+            // Auto-advance to next page
+            setTimeout(() => {
+                if (validatePage1()) {
+                    // Check if Supply was selected - redirect immediately
+                    if (formState.companyType === 'supply') {
+                        window.location.href = 'https://hosts.stasher.com/signup';
+                        return;
+                    }
+                    nextPage();
+                }
+            }, 300);
+        });
+    });
+
+    // Continue Button 1 (Company Type)
     document.getElementById('continueBtn1').addEventListener('click', function() {
         if (validatePage1()) {
+            // Check if Supply was selected - redirect immediately
+            if (formState.companyType === 'supply') {
+                window.location.href = 'https://hosts.stasher.com/signup';
+                return;
+            }
             nextPage();
         }
     });
@@ -432,36 +1357,9 @@ function setupEventListeners() {
         });
     }
 
-    // Page 2: Company Type
-    document.querySelectorAll('.company-type-box').forEach(box => {
-        box.addEventListener('click', function() {
-            document.querySelectorAll('.company-type-box').forEach(b => b.classList.remove('selected'));
-            this.classList.add('selected');
-            formState.companyType = this.dataset.type;
-            updateContinueButton(2);
-            
-            // Auto-advance to next page
-            setTimeout(() => {
-                if (validatePage2()) {
-                    // Check if Supply was selected - redirect immediately
-                    if (formState.companyType === 'supply') {
-                        window.location.href = 'https://hosts.stasher.com/signup';
-                        return;
-                    }
-                    nextPage();
-                }
-            }, 300);
-        });
-    });
-
-    // Continue Button 2
+    // Continue Button 2 (Program)
     document.getElementById('continueBtn2').addEventListener('click', function() {
         if (validatePage2()) {
-            // Check if Supply was selected - redirect immediately
-            if (formState.companyType === 'supply') {
-                window.location.href = 'https://hosts.stasher.com/signup';
-                return;
-            }
             nextPage();
         }
     });
@@ -482,8 +1380,15 @@ function setupEventListeners() {
     });
 
     // Continue Button 3
-    document.getElementById('continueBtn3').addEventListener('click', function() {
+    document.getElementById('continueBtn3').addEventListener('click', async function() {
         if (validatePage3()) {
+            // Stage A: Create affiliate immediately after Page 3
+            try {
+                await createAffiliateAfterPage3();
+            } catch (error) {
+                console.error('Error creating affiliate after Page 3:', error);
+                // Do not block the flow; final submission will fall back to legacy behavior
+            }
             nextPage();
         }
     });
@@ -498,8 +1403,15 @@ function setupEventListeners() {
     setupCountryInputs();
 
     // Continue Button 4
-    document.getElementById('continueBtn4').addEventListener('click', function() {
+    document.getElementById('continueBtn4').addEventListener('click', async function() {
         if (validatePage4()) {
+            // Update commission type immediately when Continue is clicked
+            try {
+                await updateCommissionTypeAfterPage4();
+            } catch (error) {
+                console.error('Error updating commission type after Page 4:', error);
+                // Don't block the flow
+            }
             nextPage();
         }
     });
@@ -513,6 +1425,7 @@ function setupEventListeners() {
     const bookDemoBtn = document.getElementById('bookDemoBtn');
     if (bookDemoBtn) {
         bookDemoBtn.addEventListener('click', function() {
+            formState.wantsDemoCall = true;  // Track that user wants demo call
             window.location.href = 'https://cal.com/periklis/15min';
         });
     }
@@ -524,6 +1437,7 @@ function setupEventListeners() {
             e.preventDefault();
             e.stopPropagation();
             console.log('Skip demo link clicked');
+            formState.wantsDemoCall = false;  // Track that user doesn't want demo call
             handleSkipDemo();
         }
     });
@@ -542,6 +1456,215 @@ function setupEventListeners() {
             goBackToLandingPage();
         });
     }
+}
+
+function initI18n() {
+    cacheTextNodes();
+    cachePlaceholderNodes();
+    cacheHtmlBlocks();
+    applyTranslations(formState.language);
+}
+
+function cacheTextNodes() {
+    const englishKeys = Object.keys(TEXT_TRANSLATIONS_DE);
+    const keySet = new Set(englishKeys);
+    englishKeys.forEach(key => {
+        textTranslationRegistry[key] = [];
+    });
+    const elements = document.querySelectorAll('body *');
+    elements.forEach(el => {
+        if (el.children.length === 0) {
+            const textValue = el.textContent.trim();
+            if (keySet.has(textValue)) {
+                textTranslationRegistry[textValue].push(el);
+                if (!el.dataset.i18nEn) {
+                    el.dataset.i18nEn = textValue;
+                }
+            }
+        }
+    });
+}
+
+function cachePlaceholderNodes() {
+    Object.keys(PLACEHOLDER_TRANSLATIONS_DE).forEach(english => {
+        const selector = `[placeholder="${english.replace(/"/g, '\\"')}"]`;
+        const elements = Array.from(document.querySelectorAll(selector));
+        placeholderTranslationRegistry[english] = elements;
+        elements.forEach(el => {
+            if (!el.dataset.i18nPlaceholderEn) {
+                el.dataset.i18nPlaceholderEn = english;
+            }
+        });
+    });
+}
+
+function cacheHtmlBlocks() {
+    HTML_TRANSLATIONS.forEach(entry => {
+        const elements = Array.from(document.querySelectorAll(entry.selector));
+        htmlTranslationRegistry.push({
+            selector: entry.selector,
+            elements,
+            de: entry.de,
+            fr: entry.fr,
+            es: entry.es,
+            it: entry.it
+        });
+        elements.forEach(el => {
+            if (!el.dataset.i18nHtmlEn) {
+                el.dataset.i18nHtmlEn = el.innerHTML;
+            }
+        });
+    });
+}
+
+function applyTranslations(language) {
+    const useGerman = language === 'de';
+    const useFrench = language === 'fr';
+    const useSpanish = language === 'es';
+    const useItalian = language === 'it';
+    Object.entries(textTranslationRegistry).forEach(([english, elements]) => {
+        const translationDE = TEXT_TRANSLATIONS_DE[english];
+        const translationFR = TEXT_TRANSLATIONS_FR[english];
+        const translationES = TEXT_TRANSLATIONS_ES[english];
+        const translationIT = TEXT_TRANSLATIONS_IT[english];
+        elements.forEach(el => {
+            const original = el.dataset.i18nEn || english;
+            if (useGerman && translationDE) {
+                el.textContent = translationDE;
+            } else if (useFrench && translationFR) {
+                el.textContent = translationFR;
+            } else if (useSpanish && translationES) {
+                el.textContent = translationES;
+            } else if (useItalian && translationIT) {
+                el.textContent = translationIT;
+            } else {
+                el.textContent = original;
+            }
+        });
+    });
+
+    Object.entries(placeholderTranslationRegistry).forEach(([english, elements]) => {
+        const translationDE = PLACEHOLDER_TRANSLATIONS_DE[english];
+        const translationFR = PLACEHOLDER_TRANSLATIONS_FR[english];
+        const translationES = PLACEHOLDER_TRANSLATIONS_ES[english];
+        const translationIT = PLACEHOLDER_TRANSLATIONS_IT[english];
+        elements.forEach(el => {
+            const original = el.dataset.i18nPlaceholderEn || english;
+            if (useGerman && translationDE) {
+                el.setAttribute('placeholder', translationDE);
+            } else if (useFrench && translationFR) {
+                el.setAttribute('placeholder', translationFR);
+            } else if (useSpanish && translationES) {
+                el.setAttribute('placeholder', translationES);
+            } else if (useItalian && translationIT) {
+                el.setAttribute('placeholder', translationIT);
+            } else {
+                el.setAttribute('placeholder', original);
+            }
+        });
+    });
+
+    htmlTranslationRegistry.forEach(entry => {
+        entry.elements.forEach(el => {
+            const original = el.dataset.i18nHtmlEn || el.innerHTML;
+            if (useGerman && entry.de) {
+                el.innerHTML = entry.de;
+            } else if (useFrench && entry.fr) {
+                el.innerHTML = entry.fr;
+            } else if (useSpanish && entry.es) {
+                el.innerHTML = entry.es;
+            } else if (useItalian && entry.it) {
+                el.innerHTML = entry.it;
+            } else {
+                el.innerHTML = original;
+            }
+        });
+    });
+
+    translateCheckboxText(language);
+    translateFooterText(language);
+    generateSummary();
+}
+
+function translateCheckboxText(language) {
+    const checkboxText = document.querySelector('.checkbox-text');
+    if (!checkboxText) return;
+    const textNodes = Array.from(checkboxText.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
+    if (textNodes.length > 0) {
+        if (language === 'de') {
+            textNodes[0].textContent = 'Ich akzeptiere die ';
+        } else if (language === 'fr') {
+            textNodes[0].textContent = 'J\'accepte les ';
+        } else if (language === 'es') {
+            textNodes[0].textContent = 'Acepto los ';
+        } else if (language === 'it') {
+            textNodes[0].textContent = 'Accetto i ';
+        } else {
+            textNodes[0].textContent = 'I accept the ';
+        }
+    }
+    if (textNodes.length > 1) {
+        textNodes[textNodes.length - 1].textContent = ' *';
+    }
+    const termsLink = checkboxText.querySelector('#termsLink');
+    if (termsLink) {
+        if (language === 'de') {
+            termsLink.textContent = 'Allgemeine Geschäftsbedingungen';
+        } else if (language === 'fr') {
+            termsLink.textContent = 'Conditions générales';
+        } else if (language === 'es') {
+            termsLink.textContent = 'Términos y condiciones';
+        } else if (language === 'it') {
+            termsLink.textContent = 'Termini e condizioni';
+        } else {
+            termsLink.textContent = 'Terms & Conditions';
+        }
+    }
+}
+
+function translateFooterText(language) {
+    const footerText = document.querySelector('.footer-bottom span');
+    if (!footerText) return;
+    const currentYear = new Date().getFullYear();
+    if (language === 'de') {
+        footerText.innerHTML = `© <span id="footerYear">${currentYear}</span> Stasher Ltd. Alle Rechte vorbehalten.`;
+    } else if (language === 'fr') {
+        footerText.innerHTML = `© <span id="footerYear">${currentYear}</span> Stasher Ltd. Tous droits réservés.`;
+    } else if (language === 'es') {
+        footerText.innerHTML = `© <span id="footerYear">${currentYear}</span> Stasher Ltd. Todos los derechos reservados.`;
+    } else if (language === 'it') {
+        footerText.innerHTML = `© <span id="footerYear">${currentYear}</span> Stasher Ltd. Tutti i diritti riservati.`;
+    } else {
+        footerText.innerHTML = `© <span id="footerYear">${currentYear}</span> Stasher Ltd. All rights reserved.`;
+    }
+}
+
+function getValidationMessage(key) {
+    const entry = VALIDATION_TRANSLATIONS[key];
+    if (!entry) return '';
+    if (formState.language === 'de') {
+        return entry.de;
+    } else if (formState.language === 'fr') {
+        return entry.fr;
+    } else if (formState.language === 'es') {
+        return entry.es;
+    } else if (formState.language === 'it') {
+        return entry.it;
+    }
+    return entry.en;
+}
+
+function getTranslatedTextValue(englishText) {
+    if (formState.language === 'de') {
+        return TEXT_TRANSLATIONS_DE[englishText] || englishText;
+    } else if (formState.language === 'fr') {
+        return TEXT_TRANSLATIONS_FR[englishText] || englishText;
+    } else if (formState.language === 'es') {
+        return TEXT_TRANSLATIONS_ES[englishText] || englishText;
+    } else if (formState.language === 'it') {
+        return TEXT_TRANSLATIONS_IT[englishText] || englishText;
+    }
+    return englishText;
 }
 
 // Setup Page 4 Listeners
@@ -727,11 +1850,11 @@ function updateContinueButton(pageNumber) {
 
     switch(pageNumber) {
         case 1:
-            isValid = formState.program !== null;
+            isValid = formState.companyType !== null;
             button = document.getElementById('continueBtn1');
             break;
         case 2:
-            isValid = formState.companyType !== null;
+            isValid = formState.program !== null;
             button = document.getElementById('continueBtn2');
             break;
         case 3:
@@ -767,12 +1890,14 @@ function updateContinueButton(pageNumber) {
 }
 
 // Validation Functions
+// Page 1: Company Type
 function validatePage1() {
-    return formState.program !== null;
+    return formState.companyType !== null;
 }
 
+// Page 2: Program Selection
 function validatePage2() {
-    return formState.companyType !== null;
+    return formState.program !== null;
 }
 
 function validatePage3() {
@@ -809,39 +1934,39 @@ function isValidEmail(email) {
 function generateSummary() {
     const summaryContent = document.getElementById('summaryContent');
     const companyTypeLabels = {
-        'supply': 'I want to store bags (Supply)',
-        'vacation-rental': 'Vacation Rental / STR / Airbnb Host',
-        'pms': 'PMS',
-        'venue': 'Venue',
-        'blog': 'Blog',
-        'tour-operator': 'Tour Operator',
-        'transportations': 'Transportations',
-        'other': 'Other'
+        'supply': getTranslatedTextValue('I want to store bags (Supply)'),
+        'vacation-rental': getTranslatedTextValue('Vacation Rental / STR / Airbnb Host'),
+        'pms': getTranslatedTextValue('PMS'),
+        'venue': getTranslatedTextValue('Venue'),
+        'blog': getTranslatedTextValue('Blog'),
+        'tour-operator': getTranslatedTextValue('Tour Operator'),
+        'transportations': getTranslatedTextValue('Transportations'),
+        'other': getTranslatedTextValue('Other')
     };
 
     let html = `
         <div class="summary-item">
-            <span class="summary-label">Program:</span>
+            <span class="summary-label">${getTranslatedTextValue('Program')}:</span>
             <span>${formState.program}</span>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Company Type:</span>
+            <span class="summary-label">${getTranslatedTextValue('Company Type')}:</span>
             <span>${companyTypeLabels[formState.companyType] || formState.companyType}</span>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Name:</span>
+            <span class="summary-label">${getTranslatedTextValue('Name')}:</span>
             <span>${formState.firstName} ${formState.lastName}</span>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Email:</span>
+            <span class="summary-label">${getTranslatedTextValue('Email')}:</span>
             <span>${formState.email}</span>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Company Name:</span>
+            <span class="summary-label">${getTranslatedTextValue('Company Name')}:</span>
             <span>${formState.companyName}</span>
         </div>
         <div class="summary-item">
-            <span class="summary-label">Location:</span>
+            <span class="summary-label">${getTranslatedTextValue('Location')}:</span>
             <span>${formState.city}, ${formState.country}</span>
         </div>
     `;
@@ -849,7 +1974,7 @@ function generateSummary() {
     if (formState.companyWebsite) {
         html += `
             <div class="summary-item">
-                <span class="summary-label">Website:</span>
+                <span class="summary-label">${getTranslatedTextValue('Website')}:</span>
                 <span>${formState.companyWebsite}</span>
             </div>
         `;
@@ -858,7 +1983,7 @@ function generateSummary() {
     if (formState.numberOfProperties) {
         html += `
             <div class="summary-item">
-                <span class="summary-label">Number of Properties:</span>
+                <span class="summary-label">${getTranslatedTextValue('Number of Properties')}:</span>
                 <span>${formState.numberOfProperties}</span>
             </div>
         `;
@@ -867,7 +1992,7 @@ function generateSummary() {
     if (formState.companyDescription) {
         html += `
             <div class="summary-item">
-                <span class="summary-label">Description:</span>
+                <span class="summary-label">${getTranslatedTextValue('Description')}:</span>
                 <span>${formState.companyDescription}</span>
             </div>
         `;
@@ -879,10 +2004,15 @@ function generateSummary() {
 // Handle Skip Demo
 async function handleSkipDemo() {
     const skipDemoLink = document.getElementById('skipDemoLink');
+    const skipDemoLoading = document.getElementById('skipDemoLoading');
     if (skipDemoLink) {
         skipDemoLink.setAttribute('aria-busy', 'true');
         skipDemoLink.style.pointerEvents = 'none';
         skipDemoLink.style.opacity = '0.6';
+    }
+
+    if (skipDemoLoading) {
+        skipDemoLoading.style.display = 'flex';
     }
 
     try {
@@ -910,6 +2040,10 @@ async function handleSkipDemo() {
             skipDemoLink.removeAttribute('aria-busy');
             skipDemoLink.style.pointerEvents = 'auto';
             skipDemoLink.style.opacity = '1';
+        }
+
+        if (skipDemoLoading) {
+            skipDemoLoading.style.display = 'none';
         }
     }
 }
@@ -969,7 +2103,141 @@ function showConfirmationPage() {
     console.log('Confirmation page setup complete');
 }
 
-// Create affiliate via secure backend endpoint
+// Stage A: Create affiliate as soon as Page 3 (personal info) is completed
+async function createAffiliateAfterPage3() {
+    // If we've already created an affiliate in this session, skip
+    if (createdAffiliateId) {
+        console.log('Affiliate already created after Page 3 with ID:', createdAffiliateId);
+        return;
+    }
+
+    // Get parent_id from hidden field if present
+    const parentIdField = document.getElementById('parent_id');
+    const parentId = parentIdField && parentIdField.value ? parentIdField.value.trim() : null;
+
+    // Build minimal payload for Stage A
+    const payload = {
+        mode: 'create_affiliate_only',
+        first_name: formState.firstName,
+        last_name: formState.lastName,
+        email: formState.email,
+        password: formState.password,
+        city: 'N/A',  // Will be updated later in Stage B
+        country: 'GB',  // Default, will be updated later in Stage B
+        company: 'N/A'  // Will be updated later in Stage B
+    };
+
+    // Add company_type if available (for custom fields)
+    if (formState.companyType) {
+        payload.company_type = formState.companyType;
+    }
+
+    // Add commission_type if available (for custom fields)
+    if (formState.commissionType) {
+        payload.commission_type = formState.commissionType;
+    }
+
+    // Add wantsDemoCall if available (for custom fields)
+    payload.wantsDemoCall = formState.wantsDemoCall;
+
+    // Add parent_id if present (for MLM functionality)
+    if (parentId && parentId !== '' && parentId !== 'null') {
+        payload.parent_id = parentId;
+    }
+
+    console.log('Stage A: Creating affiliate after Page 3 with payload:', JSON.stringify({ ...payload, password: '***MASKED***' }, null, 2));
+
+    try {
+        const response = await fetch(BACKEND_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const contentType = response.headers.get('content-type');
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            // Check if response is HTML (error page)
+            if (contentType && contentType.includes('text/html')) {
+                console.error('Stage A: Backend returned HTML error page instead of JSON');
+                return; // Don't throw - allow fallback to legacy mode
+            }
+
+            let errorMessage = 'Failed to create affiliate';
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch (e) {
+                console.error('Stage A: Could not parse error response:', responseText);
+            }
+            console.warn('Stage A: Failed to create affiliate:', errorMessage);
+            return; // Don't throw - allow fallback to legacy mode
+        }
+
+        // Parse JSON response
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Stage A: Could not parse response:', responseText);
+            return; // Don't throw - allow fallback to legacy mode
+        }
+
+        if (data && data.success && data.affiliate_id) {
+            createdAffiliateId = data.affiliate_id;
+            console.log('✅ Stage A: Affiliate created after Page 3 with ID:', createdAffiliateId);
+        } else {
+            console.warn('Stage A: No affiliate_id returned from backend');
+        }
+    } catch (error) {
+        console.error('Stage A: Error creating affiliate after Page 3:', error);
+        // Don't throw - allow fallback to legacy mode
+    }
+}
+
+// Update affiliate with commission type after Page 4
+async function updateCommissionTypeAfterPage4() {
+    // Only update if affiliate was created in Stage A and commission type is available
+    if (!createdAffiliateId || !formState.commissionType) {
+        console.log('Skipping commission type update - no affiliate ID or commission type');
+        return;
+    }
+
+    const payload = {
+        mode: 'update_custom_fields',
+        affiliate_id: createdAffiliateId,
+        commission_type: formState.commissionType
+    };
+
+    console.log('Updating affiliate with commission type:', payload);
+
+    try {
+        const response = await fetch(BACKEND_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Failed to update commission type:', errorData);
+            // Don't throw - allow flow to continue
+        } else {
+            const result = await response.json();
+            console.log('Commission type updated successfully:', result);
+        }
+    } catch (error) {
+        console.error('Error updating commission type:', error);
+        // Don't throw - allow flow to continue
+    }
+}
+
+// Create affiliate via secure backend endpoint (Stage B or legacy)
 async function createTapfiliateAffiliate() {
     const companyTypeLabels = {
         'supply': 'I want to store bags (Supply)',
@@ -987,56 +2255,113 @@ async function createTapfiliateAffiliate() {
         throw new Error('Program selection is missing or invalid.');
     }
 
-    // DO NOT send onboarding_fields - Company Type, Commission Type, and Number of Properties
-    // are collected in the form for validation only, but NOT sent to Tapfiliate API
-    // Explicitly DO NOT include:
-    // - company_type (collected in form but not sent to API)
-    // - commission_type (collected in form but not sent to API)
-    // - number_of_properties (collected in form but not sent to API)
+    // Decide which payload to send based on whether Stage A has already created an affiliate
+    let payloadToSend;
 
-    // Prepare affiliate data according to Tapfiliate API structure
-    // Field mapping: first_name, last_name, email, password, city, country, company
-    const affiliatePayload = {
-        program: programId,
-        first_name: formState.firstName,
-        last_name: formState.lastName,
-        email: formState.email,
-        password: formState.password,
-        city: formState.city,
-        country: formState.country,
-        company: formState.companyName
-    };
+    if (createdAffiliateId) {
+        // Stage B: Finalize existing affiliate and enroll into selected program
+        payloadToSend = {
+            mode: 'finalize_affiliate',
+            affiliate_id: createdAffiliateId,
+            program: programId,
+            address: {
+                address: 'n/a',
+                postal_code: 'n/a',
+                city: formState.city || 'n/a',
+                country: {
+                    code: COUNTRY_ISO_MAP[formState.country] || 'GB'
+                }
+            },
+            company: {
+                name: formState.companyName || 'n/a',
+                description: formState.companyDescription || ''
+            }
+        };
 
-    // Optional fields
-    if (formState.companyDescription) {
-        affiliatePayload.company_description = formState.companyDescription;
-    }
-
-    if (formState.companyWebsite) {
-        affiliatePayload.metadata = { website: formState.companyWebsite };
-    }
-
-    // DO NOT add onboarding_fields - Company Type, Commission Type, and Number of Properties
-    // are collected in the form for validation only, but NOT sent to Tapfiliate API
-
-    Object.keys(affiliatePayload).forEach((key) => {
-        if (affiliatePayload[key] === undefined || affiliatePayload[key] === null) {
-            delete affiliatePayload[key];
+        // Pass parent_id for MLM if present in the hidden field
+        const parentIdField = document.getElementById('parent_id');
+        if (parentIdField && parentIdField.value && parentIdField.value.trim() !== '') {
+            payloadToSend.parent_id = parentIdField.value.trim();
         }
-        if (key === 'metadata' && affiliatePayload.metadata && Object.keys(affiliatePayload.metadata).length === 0) {
-            delete affiliatePayload.metadata;
+
+        // Add commission_type if available (for custom fields)
+        if (formState.commissionType) {
+            payloadToSend.commission_type = formState.commissionType;
         }
-    });
+
+        // Add wantsDemoCall if available (for custom fields)
+        payloadToSend.wantsDemoCall = formState.wantsDemoCall;
+
+        // Add website metadata if provided
+        if (formState.companyWebsite) {
+            payloadToSend.metadata = { website: formState.companyWebsite };
+        }
+
+        console.log('Stage B: Finalizing existing affiliate with payload:', JSON.stringify(payloadToSend, null, 2));
+    } else {
+        // Legacy behavior: create affiliate + enroll in one step (fallback if Stage A failed)
+        const affiliatePayload = {
+            program: programId,
+            first_name: formState.firstName,
+            last_name: formState.lastName,
+            email: formState.email,
+            password: formState.password,
+            city: formState.city,
+            country: formState.country,
+            company: formState.companyName
+        };
+
+        // Optional fields
+        if (formState.companyDescription) {
+            affiliatePayload.company_description = formState.companyDescription;
+        }
+
+        if (formState.companyWebsite) {
+            affiliatePayload.metadata = { website: formState.companyWebsite };
+        }
+
+        // Add company_type if available (for custom fields)
+        if (formState.companyType) {
+            affiliatePayload.company_type = formState.companyType;
+        }
+
+        // Add commission_type if available (for custom fields)
+        if (formState.commissionType) {
+            affiliatePayload.commission_type = formState.commissionType;
+        }
+
+        // Add wantsDemoCall if available (for custom fields)
+        affiliatePayload.wantsDemoCall = formState.wantsDemoCall;
+
+        // Get parent_id from hidden field if present (for MLM functionality)
+        const parentIdField = document.getElementById('parent_id');
+        if (parentIdField && parentIdField.value && parentIdField.value.trim() !== '') {
+            affiliatePayload.parent_id = parentIdField.value.trim();
+        }
+
+        // Clean up undefined/null values
+        Object.keys(affiliatePayload).forEach((key) => {
+            if (affiliatePayload[key] === undefined || affiliatePayload[key] === null) {
+                delete affiliatePayload[key];
+            }
+            if (key === 'metadata' && affiliatePayload.metadata && Object.keys(affiliatePayload.metadata).length === 0) {
+                delete affiliatePayload.metadata;
+            }
+        });
+
+        payloadToSend = affiliatePayload;
+        console.log('Legacy: Creating and enrolling affiliate in one step with payload:', JSON.stringify({ ...payloadToSend, password: '***MASKED***' }, null, 2));
+    }
 
     try {
-        console.log('Sending affiliate data to backend:', JSON.stringify(affiliatePayload, null, 2));
+        console.log('Sending affiliate data to backend:', JSON.stringify({ ...payloadToSend, password: payloadToSend.password ? '***MASKED***' : undefined }, null, 2));
         
         const response = await fetch(BACKEND_API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(affiliatePayload)
+            body: JSON.stringify(payloadToSend)
         });
 
         const contentType = response.headers.get('content-type');

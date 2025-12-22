@@ -1,0 +1,23 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "No pre-build commands needed"
+    build:
+      commands:
+        - echo "No build commands needed - static site"
+  artifacts:
+    baseDirectory: /
+    files:
+      - '**/*'
+  cache:
+    paths: []
+backend:
+  phases:
+    build:
+      commands:
+        - echo "Backend Lambda function is deployed separately via AWS Console or Amplify CLI"
+
+
+

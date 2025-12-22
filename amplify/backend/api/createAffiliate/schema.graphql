@@ -1,0 +1,6 @@
+# This file is a placeholder for GraphQL schema
+# For REST API, we use API Gateway + Lambda instead
+# This file can be removed if not using AppSync
+
+
+
