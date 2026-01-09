@@ -64,21 +64,6 @@ const formState = {
 // Affiliate ID created after Page 3 (Stage A)
 let createdAffiliateId = null;
 
-// Loading overlay functions
-function showLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.classList.add('active');
-    }
-}
-
-function hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
-}
-
 // Backend API Endpoint
 // This points to your AWS API Gateway endpoint
 const BACKEND_API_URL = 'https://3cw7ssdjuh.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
@@ -1396,14 +1381,11 @@ function setupEventListeners() {
     document.getElementById('continueBtn3').addEventListener('click', async function() {
         if (validatePage3()) {
             // Stage A: Create affiliate immediately after Page 3
-            showLoading();
             try {
                 await createAffiliateAfterPage3();
             } catch (error) {
                 console.error('Error creating affiliate after Page 3:', error);
                 // Do not block the flow; final submission will fall back to legacy behavior
-            } finally {
-                hideLoading();
             }
             nextPage();
         }
@@ -1422,14 +1404,11 @@ function setupEventListeners() {
     document.getElementById('continueBtn4').addEventListener('click', async function() {
         if (validatePage4()) {
             // Update commission type immediately when Continue is clicked
-            showLoading();
             try {
                 await updateCommissionTypeAfterPage4();
             } catch (error) {
                 console.error('Error updating commission type after Page 4:', error);
                 // Don't block the flow
-            } finally {
-                hideLoading();
             }
             nextPage();
         }
@@ -2122,6 +2101,21 @@ function showConfirmationPage() {
     console.log('Confirmation page setup complete');
 }
 
+// Helper functions to show/hide loading overlay for Page 3 and Page 4
+function showApiLoading() {
+    const loadingOverlay = document.getElementById('apiLoadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'flex';
+    }
+}
+
+function hideApiLoading() {
+    const loadingOverlay = document.getElementById('apiLoadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
+
 // Stage A: Create affiliate as soon as Page 3 (personal info) is completed
 async function createAffiliateAfterPage3() {
     // If we've already created an affiliate in this session, skip
@@ -2166,6 +2160,7 @@ async function createAffiliateAfterPage3() {
 
     console.log('Stage A: Creating affiliate after Page 3 with payload:', JSON.stringify({ ...payload, password: '***MASKED***' }, null, 2));
 
+    showApiLoading();
     try {
         const response = await fetch(BACKEND_API_URL, {
             method: 'POST',
@@ -2214,6 +2209,8 @@ async function createAffiliateAfterPage3() {
     } catch (error) {
         console.error('Stage A: Error creating affiliate after Page 3:', error);
         // Don't throw - allow fallback to legacy mode
+    } finally {
+        hideApiLoading();
     }
 }
 
@@ -2233,6 +2230,7 @@ async function updateCommissionTypeAfterPage4() {
 
     console.log('Updating affiliate with commission type:', payload);
 
+    showApiLoading();
     try {
         const response = await fetch(BACKEND_API_URL, {
             method: 'POST',
@@ -2253,6 +2251,8 @@ async function updateCommissionTypeAfterPage4() {
     } catch (error) {
         console.error('Error updating commission type:', error);
         // Don't throw - allow flow to continue
+    } finally {
+        hideApiLoading();
     }
 }
 
