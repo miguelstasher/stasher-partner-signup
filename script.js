@@ -2104,13 +2104,18 @@ function showConfirmationPage() {
 // Helper functions to show/hide loading overlay for Page 3 and Page 4
 function showApiLoading() {
     const loadingOverlay = document.getElementById('apiLoadingOverlay');
+    console.log('showApiLoading called, element found:', !!loadingOverlay);
     if (loadingOverlay) {
         loadingOverlay.style.display = 'flex';
+        console.log('Loading overlay shown');
+    } else {
+        console.error('apiLoadingOverlay element not found!');
     }
 }
 
 function hideApiLoading() {
     const loadingOverlay = document.getElementById('apiLoadingOverlay');
+    console.log('hideApiLoading called');
     if (loadingOverlay) {
         loadingOverlay.style.display = 'none';
     }
