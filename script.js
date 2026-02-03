@@ -66,7 +66,7 @@ let createdAffiliateId = null;
 
 // Backend API Endpoint
 // This points to your AWS API Gateway endpoint
-const BACKEND_API_URL = 'https://3cw7ssdjuh.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
+const BACKEND_API_URL = 'https://wpnp6ab1ge.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
 
 // Map program currency to Tapfiliate Program ID
 // These are the actual program IDs from your Tapfiliate dashboard
