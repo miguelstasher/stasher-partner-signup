@@ -2657,3 +2657,26 @@ button, .currency-box, .company-type-box {
 .terms-modal-body::-webkit-scrollbar-thumb:hover {
     background: #0f2347;
 }
+
+/* ================================
+   FIX: Make header logo clickable
+   ================================ */
+
+.header-inner {
+    pointer-events: none;
+}
+
+.logo-container,
+.logo-container * {
+    pointer-events: auto;
+}
+
+.logo-container {
+    position: relative;
+    z-index: 3000;
+}
+
+.logo-link {
+    cursor: pointer;
+}
+
