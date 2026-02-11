@@ -75,6 +75,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 15px;
+    position: relative;
+    z-index: 1;
 }
 
 /* Header Styles */
