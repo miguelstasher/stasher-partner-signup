@@ -1015,14 +1015,13 @@ function initializeLandingPage() {
         footerYear.textContent = new Date().getFullYear();
     }
 
-    // Logo click - redirect to landing page
-    const logoLink = document.getElementById('logoLink');
-    if (logoLink) {
-        logoLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            goBackToLandingPage();
-        });
-    }
+    // Logo click - redirect to stasher.com
+const logoLink = document.getElementById('logoLink');
+if (logoLink) {
+    logoLink.addEventListener('click', function () {
+        window.location.href = 'https://stasher.com/';
+    });
+}
 
     // Initialize FAQs toggle functionality
     initializeFAQs();
