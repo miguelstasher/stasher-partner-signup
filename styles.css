@@ -2662,10 +2662,6 @@ button, .currency-box, .company-type-box {
    FIX: Make header logo clickable
    ================================ */
 
-.header-inner {
-    pointer-events: none;
-}
-
 .logo-container,
 .logo-container * {
     pointer-events: auto;
