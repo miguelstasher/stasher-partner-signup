@@ -66,7 +66,7 @@ let createdAffiliateId = null;
 
 // Backend API Endpoint
 // This points to your AWS API Gateway endpoint
-const BACKEND_API_URL = 'https://3cw7ssdjuh.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
+const BACKEND_API_URL = 'https://wpnp6ab1ge.execute-api.eu-north-1.amazonaws.com/prod/create-affiliate';
 
 // Map program currency to Tapfiliate Program ID
 // These are the actual program IDs from your Tapfiliate dashboard
@@ -1015,14 +1015,13 @@ function initializeLandingPage() {
         footerYear.textContent = new Date().getFullYear();
     }
 
-    // Logo click - redirect to landing page
-    const logoLink = document.getElementById('logoLink');
-    if (logoLink) {
-        logoLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            goBackToLandingPage();
-        });
-    }
+    // Logo click - redirect to stasher.com
+const logoLink = document.getElementById('logoLink');
+if (logoLink) {
+    logoLink.addEventListener('click', function () {
+        window.location.href = 'https://stasher.com/';
+    });
+}
 
     // Initialize FAQs toggle functionality
     initializeFAQs();
