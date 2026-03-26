@@ -594,14 +594,7 @@ body {
 }
 
 .timeline-steps::before {
-    content: '';
-    position: absolute;
-    top: 50px;
-    left: 36px;
-    right: 36px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(20, 46, 89, 0.15), rgba(20, 46, 89, 0.05));
-    z-index: 0;
+    display: none;
 }
 
 .timeline-step {
