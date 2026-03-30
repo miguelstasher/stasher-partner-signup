@@ -2676,3 +2676,522 @@ button, .currency-box, .company-type-box {
     cursor: pointer;
 }
 
+/* ==========================================
+   Landing Page Redesign - Premium Dark UI
+   ========================================== */
+
+html,
+body {
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1400px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.landing-page {
+    max-width: 1400px;
+    padding: 24px 0 56px;
+}
+
+.landing-content {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
+.landing-content > * {
+    grid-column: 1 / -1;
+}
+
+.landing-hero,
+.company-types-section,
+.landing-features,
+.card-section,
+.trusted-brands-section,
+.media-section,
+.locations-cta,
+.faqs-section,
+.final-cta-section {
+    background: linear-gradient(180deg, rgba(24, 25, 29, 0.98) 0%, rgba(18, 19, 22, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
+}
+
+.landing-hero {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 28px;
+    align-items: center;
+    padding: 56px 56px 52px;
+    margin-bottom: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(1, 105, 111, 0.18) 0%, transparent 60%),
+                linear-gradient(180deg, #0d0d0e 0%, #111214 100%);
+}
+
+.landing-hero-copy {
+    grid-column: span 6;
+}
+
+.landing-hero-image {
+    grid-column: span 6;
+    display: flex;
+    justify-content: center;
+}
+
+.hero-image-frame {
+    width: 100%;
+    max-width: 560px;
+    border-radius: 20px;
+    overflow: hidden;
+    transform: rotate(-3deg);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.95) contrast(1.05);
+    animation: heroImageIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+.hero-image-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+@keyframes heroImageIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) rotate(-3deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotate(-3deg);
+    }
+}
+
+.landing-title {
+    font-size: clamp(2.75rem, 5vw, 4.9rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.perfect-for {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 600;
+    margin: 16px 0 32px;
+}
+
+.perfect-for-label {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.perfect-for-wrapper {
+    overflow: hidden;
+    height: 1.2em;
+    perspective: 600px;
+}
+
+.perfect-for-word {
+    display: inline-block;
+    color: #4f98a3;
+    transform-origin: center;
+}
+
+.landing-subtitle {
+    color: rgba(255, 255, 255, 0.72);
+    max-width: 560px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.landing-highlights {
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.highlight-badge {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f5f7fb;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.highlight-badge svg {
+    color: #4f98a3;
+}
+
+.landing-cta-stack {
+    align-items: flex-start;
+}
+
+.btn-landing-cta {
+    border-radius: 16px;
+    box-shadow: 0 24px 50px rgba(10, 17, 33, 0.45);
+}
+
+.landing-login-section {
+    justify-content: flex-start;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.landing-login-text {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.landing-login-link {
+    color: #f5f7fb;
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.landing-login-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+}
+
+.company-types-section,
+.landing-features,
+.card-section,
+.trusted-brands-section,
+.media-section,
+.locations-cta,
+.faqs-section,
+.final-cta-section {
+    padding: 32px;
+    margin: 0;
+}
+
+.company-types-label,
+.trusted-brands-label,
+.media-label {
+    color: #4f98a3;
+}
+
+.company-type-item,
+.feature-card,
+.timeline-content,
+.trusted-brand-logo,
+.media-card,
+.benefit-badge,
+.faq-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: none;
+}
+
+.company-type-name,
+.features-title,
+.feature-title,
+.section-title,
+.card-section .section-title,
+.trusted-brands-title,
+.media-title,
+.faq-question,
+.locations-info h3,
+.timeline-number,
+.timeline-content h3 {
+    color: #ffffff;
+}
+
+.trusted-brands-subtitle,
+.media-subtitle,
+.feature-description,
+.timeline-content p,
+.media-quote,
+.media-source,
+.locations-info p,
+.benefit-text,
+.faq-answer p,
+.faq-answer a {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.company-types-grid {
+    gap: 16px;
+}
+
+.company-type-item {
+    max-width: none;
+}
+
+.company-type-icon {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.company-type-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(79, 152, 163, 0.24);
+}
+
+.landing-features {
+    overflow: hidden;
+}
+
+.features-grid {
+    margin-top: 12px;
+}
+
+.benefits-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.feature-card {
+    border-radius: 24px;
+    padding: 28px 24px;
+    transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease, opacity 0.5s ease;
+    opacity: 0;
+    transform: translateY(26px);
+}
+
+.feature-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    border-color: rgba(79, 152, 163, 0.22);
+}
+
+.feature-card--primary {
+    grid-column: 1 / span 2;
+    min-height: 280px;
+}
+
+.feature-card--tall {
+    grid-column: 3;
+    grid-row: span 2;
+}
+
+.feature-card--wide {
+    grid-column: 1 / span 2;
+}
+
+.feature-icon {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.timeline-icon {
+    background: rgba(79, 152, 163, 0.14);
+}
+
+.logo-ticker {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.logo-track {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    width: max-content;
+    animation: ticker-scroll 30s linear infinite;
+}
+
+.logo-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.trusted-brand-logo {
+    width: 160px;
+    height: 82px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.trusted-brand-logo img {
+    height: 48px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    filter: grayscale(1) opacity(0.6);
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.trusted-brand-logo:hover img {
+    filter: grayscale(0) opacity(1);
+    transform: translateY(-2px);
+}
+
+.media-card,
+.faq-item {
+    border-radius: 18px;
+}
+
+.faq-question {
+    background: transparent;
+}
+
+.locations-cta {
+    max-width: none;
+}
+
+.benefit-badge {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.benefit-badge svg path {
+    stroke: #4f98a3;
+}
+
+.final-cta-section {
+    text-align: center;
+}
+
+@media (max-width: 1024px) {
+    .landing-hero {
+        padding: 44px 32px;
+    }
+
+    .landing-hero-copy,
+    .landing-hero-image {
+        grid-column: span 6;
+    }
+
+    .benefits-track {
+        gap: 18px;
+    }
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .landing-page {
+        padding-top: 16px;
+    }
+
+    .landing-content {
+        gap: 16px;
+    }
+
+    .landing-hero,
+    .company-types-section,
+    .landing-features,
+    .card-section,
+    .trusted-brands-section,
+    .media-section,
+    .locations-cta,
+    .faqs-section,
+    .final-cta-section {
+        padding: 24px 18px;
+        border-radius: 20px;
+    }
+
+    .landing-hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .landing-hero-copy,
+    .landing-hero-image {
+        grid-column: auto;
+    }
+
+    .landing-title,
+    .landing-subtitle,
+    .landing-highlights,
+    .landing-cta-stack,
+    .landing-login-section {
+        text-align: left;
+    }
+
+    .perfect-for {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+
+    .landing-subtitle {
+        max-width: 100%;
+    }
+
+    .landing-highlights {
+        justify-content: flex-start;
+    }
+
+    .hero-image-frame {
+        max-width: 100%;
+        transform: rotate(-2deg);
+    }
+
+    .hero-image-frame img {
+        min-height: 280px;
+    }
+
+    .benefits-carousel {
+        overflow: hidden;
+    }
+
+    .benefits-track {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 8px;
+    }
+
+    .benefits-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .feature-card,
+    .feature-card--primary,
+    .feature-card--tall,
+    .feature-card--wide {
+        min-width: 84vw;
+        max-width: 84vw;
+        grid-column: auto;
+        grid-row: auto;
+        scroll-snap-align: start;
+    }
+
+    .trusted-brand-logo {
+        width: 140px;
+        height: 72px;
+    }
+
+    .trusted-brand-logo img {
+        height: 40px;
+        max-width: 120px;
+    }
+
+    .btn-landing-cta {
+        width: 100%;
+    }
+
+    .btn-landing-cta:active,
+    .landing-login-link:active {
+        transform: translateY(1px) scale(0.985);
+    }
+}
+
