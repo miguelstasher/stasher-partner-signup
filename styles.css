@@ -2540,8 +2540,13 @@ button, .currency-box, .company-type-box {
 
     .media-logos {
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
         gap: 15px;
+    }
+
+    .media-logo-link {
+        width: min(240px, 70%);
+        height: 80px;
     }
 
     .trusted-brands-logos {
