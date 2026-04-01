@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Join Stasher's affiliate program—free to join in under a minute. Help guests or clients store bags, earn extra revenue, and improve reviews.">
+    <meta name="theme-color" content="#142e59">
     <title>Partner Sign Up - Stasher</title>
 
     <!-- Favicon -->
@@ -46,47 +48,67 @@
         <!-- Landing Page -->
         <div class="landing-page" id="landingPage">
             <div class="landing-content">
-                <div class="landing-hero">
-                    <div class="pf-row" aria-live="polite" aria-atomic="true">
-                        <span class="pf-static">Perfect for</span>
-                        <span class="pf-pill-wrap">
-                            <span class="pf-pill" id="pfPill">Airbnbs</span>
-                        </span>
-                    </div>
-
-                    <h1 class="landing-title">Join Stasher's Affiliate Program</h1>
-
-                    <p class="landing-subtitle">Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.</p>
-                    
-                    <div class="landing-highlights">
-                        <div class="highlight-badge">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>Totally Free to Join</span>
-                        </div>
-                        <div class="highlight-badge">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <span>Takes Less Than 1 Minute</span>
-                        </div>
-                    </div>
-
-                    <div class="landing-cta-stack">
-                        <button class="btn-landing-cta" id="startSignupBtn">
-                            Get Started Now
-                        </button>
-
-                        <div class="landing-login-section">
-                            <span class="landing-login-text">Already have an account?</span>
-                            <a href="https://stasher.tapfiliate.com/login" class="landing-login-link" target="_self">Login</a>
+                <!-- Hero section: two-column layout. Keep the hero text fixed in place and align the MP4 video so its top edge matches the top of the text column for a cleaner, more consistent design. -->
+                <section
+                    class="landing-hero"
+                    aria-labelledby="landingHeroTitle"
+                >
+                    <div class="landing-hero-left" id="landingHeroCopy">
+                        <div class="pf-row" aria-live="polite" aria-atomic="true">
+                            <span class="pf-static">Perfect for</span>
+                            <span class="pf-pill-wrap">
+                                <span class="pf-pill" id="pfPill">Airbnbs</span>
+                            </span>
                         </div>
 
+                        <h1 class="landing-title" id="landingHeroTitle">Join Stasher's Affiliate Program</h1>
+
+                        <p class="landing-subtitle">Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.</p>
+
+                        <div class="landing-highlights">
+                            <div class="highlight-badge">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Totally Free to Join</span>
+                            </div>
+                            <div class="highlight-badge">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 8V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Takes Less Than 1 Minute</span>
+                            </div>
+                        </div>
+
+                        <div class="landing-cta-stack">
+                            <button class="btn-landing-cta" id="startSignupBtn">
+                                Get Started Now
+                            </button>
+
+                            <div class="landing-login-section">
+                                <span class="landing-login-text">Already have an account?</span>
+                                <a href="https://stasher.tapfiliate.com/login" class="landing-login-link" target="_self">Login</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                    <!-- MP4 sits in column 2, row 1 — same top edge as #landingHeroCopy (CSS Grid align-items:start). No inline nudge; hero text/heading/buttons unchanged. -->
+                    <div class="landing-hero-right" id="landingHeroMedia">
+                        <video
+                            class="landing-hero-video"
+                            id="landingHeroVideo"
+                            autoplay
+                            loop
+                            muted
+                            playsinline
+                            aria-label="Luggage animation"
+                        >
+                            <source src="HERO%20VIDEO.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </section>
 
                 <!-- Company Types Section -->
                 <div class="company-types-section">
@@ -301,13 +323,13 @@
                             <img src="trusted partners/Eurail_logo.svg" alt="Eurail logo">
                         </div>
                         <div class="trusted-brand-logo">
-                            <img src="trusted partners/Logo-Paris-je-taime-_-630x405-_-©-DR.png" alt="Paris je t'aime logo">
+                            <img src="trusted partners/paris%20je.png" alt="Paris je t'aime logo">
                         </div>
                         <div class="trusted-brand-logo">
                             <img src="trusted partners/Sonder-Logo-Colour.png" alt="Sonder logo">
                         </div>
                         <div class="trusted-brand-logo">
-                            <img src="trusted partners/Visit-London-Logo.jpg" alt="Visit London logo">
+                            <img src="trusted partners/visit%20london.png" alt="Visit London logo">
                         </div>
                     </div>
                 </div>
@@ -650,24 +672,28 @@
                     <!-- Top Row: STR, Venues, Blog -->
                     <div class="company-type-box" data-type="vacation-rental">
                         <div class="company-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 22V12H15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Icon: Built for → Airbnb hosts -->
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 19L20 7L34 19V34C34 35.1 33.1 36 32 36H24V28C24 26.34 22.66 25 21 25H19C17.34 25 16 26.34 16 28V36H8C6.9 36 6 35.1 6 34V19Z" fill="rgba(44,90,160,0.12)" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M20 22C20 22 15.5 18 15.5 15.5C15.5 13.57 17.07 12 19 12C19.72 12 20.38 12.24 20.9 12.65C21.42 12.24 22.08 12 22.8 12C24.73 12 26.3 13.57 26.3 15.5C26.3 18 21.8 22 20 22Z" fill="#2c5aa0" stroke="#142e59" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
-                        <div class="company-type-title">Vacation Rental / STR / Airbnb Host</div>
+                        <div class="company-type-title">Vacation Rental / Airbnb Host</div>
                         <div class="company-type-desc">Short-term rental property management and Airbnb Hosts.</div>
                     </div>
                     <div class="company-type-box" data-type="venue">
                         <div class="company-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M3 21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M5 21V7L12 3L19 7V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M15 9V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M9 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 3V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="12" cy="13" r="1" fill="currentColor"/>
+                            <!-- Icon: Built for → Venues -->
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 14 L20 4 L36 14Z" fill="rgba(44,90,160,0.15)" stroke="#142e59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="4" y="14" width="32" height="22" rx="1" fill="rgba(44,90,160,0.08)" stroke="#142e59" stroke-width="1.8"/>
+                                <line x1="10" y1="14" x2="10" y2="36" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="17" y1="14" x2="17" y2="36" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="23" y1="14" x2="23" y2="36" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="30" y1="14" x2="30" y2="36" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M16 36 L16 28 Q16 23 20 23 Q24 23 24 28 L24 36" fill="rgba(44,90,160,0.2)" stroke="#142e59" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="2" y1="36" x2="38" y2="36" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="1" y1="38" x2="39" y2="38" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
                             </svg>
                         </div>
                         <div class="company-type-title">Venue</div>
@@ -675,12 +701,12 @@
                     </div>
                     <div class="company-type-box" data-type="blog">
                         <div class="company-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Icon: Built for → Travel blogs -->
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="6" y="5" width="22" height="28" rx="3" fill="rgba(44,90,160,0.12)" stroke="#142e59" stroke-width="2"/>
+                                <path d="M12 13H22M12 18H22M12 23H18" stroke="#142e59" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M27 25L31 21L35 25L27 33H23V29L27 25Z" fill="rgba(44,90,160,0.15)" stroke="#142e59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M29 23L33 27" stroke="#142e59" stroke-width="1.8" stroke-linecap="round"/>
                             </svg>
                         </div>
                         <div class="company-type-title">Blog</div>
@@ -689,10 +715,18 @@
                     <!-- Bottom Row: PMS, Other, Supply -->
                     <div class="company-type-box" data-type="pms">
                         <div class="company-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M21 16V8C20.9996 7.64928 20.9071 7.30481 20.7315 7.00116C20.556 6.69751 20.3037 6.44536 20 6.27L13 2.27C12.696 2.09446 12.3511 2.00205 12 2.00205C11.6489 2.00205 11.304 2.09446 11 2.27L4 6.27C3.69626 6.44536 3.44398 6.69751 3.26846 7.00116C3.09294 7.30481 3.00036 7.64928 3 8V16C3.00036 16.3507 3.09294 16.6952 3.26846 16.9988C3.44398 17.3025 3.69626 17.5546 4 17.73L11 21.73C11.304 21.9055 11.6489 21.9979 12 21.9979C12.3511 21.9979 12.696 21.9055 13 21.73L20 17.73C20.3037 17.5546 20.556 17.3025 20.7315 16.9988C20.9071 16.6952 20.9996 16.3507 21 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M3.27002 6.96L12 12.01L20.73 6.96" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 22.08V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Icon: Built for → STRs (house + calendar; property / scheduling) -->
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 18L16 8L27 18V30H5V18Z" fill="rgba(44,90,160,0.12)" stroke="#142e59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="12" y="22" width="8" height="8" rx="1.5" stroke="#142e59" stroke-width="1.8"/>
+                                <circle cx="19.5" cy="26" r="1" fill="#142e59"/>
+                                <rect x="21" y="21" width="15" height="14" rx="3" fill="white" stroke="#142e59" stroke-width="1.8"/>
+                                <line x1="21" y1="26" x2="36" y2="26" stroke="#142e59" stroke-width="1.6"/>
+                                <line x1="26" y1="21" x2="26" y2="19" stroke="#142e59" stroke-width="1.6" stroke-linecap="round"/>
+                                <line x1="31" y1="21" x2="31" y2="19" stroke="#142e59" stroke-width="1.6" stroke-linecap="round"/>
+                                <circle cx="25" cy="30" r="1.1" fill="#2c5aa0"/>
+                                <circle cx="28.5" cy="30" r="1.1" fill="#2c5aa0"/>
+                                <circle cx="32" cy="30" r="1.1" fill="#2c5aa0"/>
                             </svg>
                         </div>
                         <div class="company-type-title">PMS</div>
@@ -700,10 +734,13 @@
                     </div>
                     <div class="company-type-box" data-type="other">
                         <div class="company-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Icon: Built for → Travel apps -->
+                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="10" y="4" width="20" height="32" rx="5" fill="rgba(44,90,160,0.12)" stroke="#142e59" stroke-width="2"/>
+                                <path d="M10 30H30" stroke="#142e59" stroke-width="1.8"/>
+                                <circle cx="20" cy="33" r="1.2" fill="#142e59"/>
+                                <path d="M20 10C17.79 10 16 11.79 16 14C16 17 20 22 20 22C20 22 24 17 24 14C24 11.79 22.21 10 20 10Z" fill="rgba(44,90,160,0.2)" stroke="#142e59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="20" cy="14" r="2" fill="#2c5aa0"/>
                             </svg>
                         </div>
                         <div class="company-type-title">Other</div>

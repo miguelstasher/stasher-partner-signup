@@ -365,7 +365,7 @@ exports.handler = async (event) => {
                         // Map company type values to labels
                         const companyTypeLabels = {
                             'supply': 'I want to store bags (Supply)',
-                            'vacation-rental': 'Vacation Rental / STR / Airbnb Host',
+                            'vacation-rental': 'Vacation Rental / Airbnb Host',
                             'pms': 'PMS',
                             'venue': 'Venue',
                             'blog': 'Blog',
@@ -961,7 +961,7 @@ exports.handler = async (event) => {
                     // Map company type values to labels
                     const companyTypeLabels = {
                         'supply': 'I want to store bags (Supply)',
-                        'vacation-rental': 'Vacation Rental / STR / Airbnb Host',
+                        'vacation-rental': 'Vacation Rental / Airbnb Host',
                         'pms': 'PMS',
                         'venue': 'Venue',
                         'blog': 'Blog',

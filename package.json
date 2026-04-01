@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Stasher Partner Sign-Up Page with Tapfiliate Integration",
   "scripts": {
-    "start": "lite-server"
+    "start": "lite-server",
+    "staging": "git checkout staging && lite-server",
+    "preview": "lite-server"
   },
   "keywords": [
     "stasher",

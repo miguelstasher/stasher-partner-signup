@@ -324,7 +324,6 @@ const countries = [
 
 // Translation dictionaries
 const TEXT_TRANSLATIONS_DE = {
-    "Perfect for": "Perfekt für",
     "Join Stasher's Affiliate Program": "Treten Sie dem Stasher-Affiliate-Programm bei",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Helfen Sie Ihren Gästen oder Kunden, ihr Gepäck aufzubewahren und erhalten Sie zusätzliche Einnahmen, höhere Kundenzufriedenheit und bessere Bewertungen.",
     "Totally Free to Join": "Kostenlose Anmeldung",
@@ -417,7 +416,7 @@ const TEXT_TRANSLATIONS_DE = {
     "Select the option that best describes your business": "Wählen Sie die Option, die Ihr Unternehmen am besten beschreibt.",
     "I want to store bags (Supply)": "Ich möchte Gepäck lagern (Supply)",
     "Store bags and earn money for every bag you store.": "Lagern Sie Gepäck und verdienen Sie an jeder Aufbewahrung.",
-    "Vacation Rental / STR / Airbnb Host": "Ferienvermietung / STR / Airbnb-Gastgeber",
+    "Vacation Rental / Airbnb Host": "Ferienvermietung / Airbnb-Gastgeber",
     "Short-term rental property management and Airbnb Hosts.": "Kurzzeitvermietungen und Airbnb-Gastgeber.",
     "PMS": "PMS",
     "Property Management System provider": "Anbieter eines Property-Management-Systems",
@@ -497,7 +496,6 @@ const PLACEHOLDER_TRANSLATIONS_DE = {
 };
 
 const TEXT_TRANSLATIONS_FR = {
-    "Perfect for": "Parfait pour",
     "Join Stasher's Affiliate Program": "Rejoignez le programme d'affiliation Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aidez vos invités ou clients à stocker leurs bagages et recevez des revenus supplémentaires, une meilleure satisfaction client et de meilleures évaluations.",
     "Totally Free to Join": "Entièrement gratuit",
@@ -590,7 +588,7 @@ const TEXT_TRANSLATIONS_FR = {
     "Select the option that best describes your business": "Sélectionnez l'option qui décrit le mieux votre entreprise",
     "I want to store bags (Supply)": "Je veux stocker des bagages (Supply)",
     "Store bags and earn money for every bag you store.": "Stockez des bagages et gagnez de l'argent pour chaque bagage stocké.",
-    "Vacation Rental / STR / Airbnb Host": "Location de vacances / STR / Hôte Airbnb",
+    "Vacation Rental / Airbnb Host": "Location de vacances / Hôte Airbnb",
     "Short-term rental property management and Airbnb Hosts.": "Gestion de locations de courte durée et hôtes Airbnb.",
     "PMS": "PMS",
     "Property Management System provider": "Fournisseur de système de gestion de propriétés",
@@ -669,7 +667,6 @@ const PLACEHOLDER_TRANSLATIONS_FR = {
 };
 
 const TEXT_TRANSLATIONS_ES = {
-    "Perfect for": "Perfecto para",
     "Join Stasher's Affiliate Program": "Únete al programa de afiliados de Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Ayuda a tus huéspedes o clientes a guardar sus maletas y recibe ingresos adicionales, mayor satisfacción del cliente y mejores reseñas.",
     "Totally Free to Join": "Totalmente gratis",
@@ -762,7 +759,7 @@ const TEXT_TRANSLATIONS_ES = {
     "Select the option that best describes your business": "Selecciona la opción que mejor describa tu negocio",
     "I want to store bags (Supply)": "Quiero almacenar maletas (Oferta)",
     "Store bags and earn money for every bag you store.": "Almacena maletas y gana dinero por cada maleta que almacenes.",
-    "Vacation Rental / STR / Airbnb Host": "Alquiler vacacional / STR / Anfitrión de Airbnb",
+    "Vacation Rental / Airbnb Host": "Alquiler vacacional / Anfitrión de Airbnb",
     "Short-term rental property management and Airbnb Hosts.": "Gestión de propiedades de alquiler de corta duración y anfitriones de Airbnb.",
     "PMS": "PMS",
     "Property Management System provider": "Proveedor de sistema de gestión de propiedades",
@@ -828,7 +825,6 @@ const TEXT_TRANSLATIONS_ES = {
 };
 
 const TEXT_TRANSLATIONS_IT = {
-    "Perfect for": "Perfetto per",
     "Join Stasher's Affiliate Program": "Unisciti al programma di affiliazione Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aiuta i tuoi ospiti o clienti a conservare i bagagli e ricevi entrate extra, maggiore soddisfazione del cliente e recensioni migliori.",
     "Totally Free to Join": "Completamente gratuito",
@@ -921,7 +917,7 @@ const TEXT_TRANSLATIONS_IT = {
     "Select the option that best describes your business": "Seleziona l'opzione che meglio descrive la tua attività",
     "I want to store bags (Supply)": "Voglio conservare bagagli (Fornitura)",
     "Store bags and earn money for every bag you store.": "Conserva bagagli e guadagna denaro per ogni bagaglio che conservi.",
-    "Vacation Rental / STR / Airbnb Host": "Affitto vacanze / STR / Host Airbnb",
+    "Vacation Rental / Airbnb Host": "Affitto vacanze / Host Airbnb",
     "Short-term rental property management and Airbnb Hosts.": "Gestione di proprietà in affitto a breve termine e Host Airbnb.",
     "PMS": "PMS",
     "Property Management System provider": "Fornitore di sistema di gestione proprietà",
@@ -1206,9 +1202,7 @@ function showSignupForm() {
     updateProgressBar(1);
     updateContinueButton(1);
     persistSignupFlowState();
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // scrollSignupFlowIntoView runs via showPage(1)
 }
 
 // Redirect to Page 2 with preselected company type
@@ -1245,9 +1239,7 @@ function redirectToPage2WithCompanyType(companyType) {
     updateProgressBar(2);
     updateContinueButton(2);
     persistSignupFlowState();
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // scrollSignupFlowIntoView runs via showPage(2)
 }
 
 // Initialize "Built For" section redirects
@@ -1717,9 +1709,6 @@ function applyTranslations(language) {
     translateCheckboxText(language);
     translateFooterText(language);
     generateSummary();
-    if (typeof window.pfSetLanguage === 'function') {
-        window.pfSetLanguage(language);
-    }
 }
 
 function translateCheckboxText(language) {
@@ -1856,7 +1845,29 @@ function setupPage4Listeners() {
     }
 }
 
-// Page Navigation
+// Page Navigation — pin signup flow to top of viewport (below sticky header); no downward "push"
+var SIGNUP_SCROLL_HEADER_OFFSET = 72;
+
+function scrollSignupFlowIntoView() {
+    const progressContainer = document.getElementById('progressContainer');
+    if (!progressContainer) return;
+    const hidden = progressContainer.style.display === 'none' ||
+        window.getComputedStyle(progressContainer).display === 'none';
+    if (hidden) return;
+    var run = function () {
+        var rect = progressContainer.getBoundingClientRect();
+        var y = rect.top + window.scrollY - SIGNUP_SCROLL_HEADER_OFFSET;
+        window.scrollTo({ top: Math.max(0, y), left: 0, behavior: 'auto' });
+    };
+    requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+            run();
+            // Step 5 fills summary async to DOM; second scroll catches final height
+            requestAnimationFrame(run);
+        });
+    });
+}
+
 function showPage(pageNumber) {
     document.querySelectorAll('.form-page').forEach(page => {
         page.classList.remove('active');
@@ -1876,6 +1887,8 @@ function showPage(pageNumber) {
     if (pageNumber === 5) {
         generateSummary();
     }
+
+    scrollSignupFlowIntoView();
 }
 
 function nextPage() {
@@ -2074,7 +2087,7 @@ function generateSummary() {
     const summaryContent = document.getElementById('summaryContent');
     const companyTypeLabels = {
         'supply': getTranslatedTextValue('I want to store bags (Supply)'),
-        'vacation-rental': getTranslatedTextValue('Vacation Rental / STR / Airbnb Host'),
+        'vacation-rental': getTranslatedTextValue('Vacation Rental / Airbnb Host'),
         'pms': getTranslatedTextValue('PMS'),
         'venue': getTranslatedTextValue('Venue'),
         'blog': getTranslatedTextValue('Blog'),
@@ -2407,7 +2420,7 @@ async function updateCommissionTypeAfterPage4() {
 async function createTapfiliateAffiliate() {
     const companyTypeLabels = {
         'supply': 'I want to store bags (Supply)',
-        'vacation-rental': 'Vacation Rental / STR / Airbnb Host',
+        'vacation-rental': 'Vacation Rental / Airbnb Host',
         'pms': 'PMS',
         'venue': 'Venue',
         'blog': 'Blog',
