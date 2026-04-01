@@ -182,6 +182,8 @@ function restoreSignupFlow() {
 
 // Affiliate ID created after Page 3 (Stage A)
 let createdAffiliateId = null;
+// Promise for Stage A — allows Stage B to await it if the user submits quickly
+let stageAPromise = null;
 
 // Backend API Endpoint
 // This points to your AWS API Gateway endpoint
@@ -1503,15 +1505,13 @@ function setupEventListeners() {
     });
 
     // Continue Button 3
-    document.getElementById('continueBtn3').addEventListener('click', async function() {
+    document.getElementById('continueBtn3').addEventListener('click', function() {
         if (validatePage3()) {
-            // Stage A: Create affiliate immediately after Page 3
-            try {
-                await createAffiliateAfterPage3();
-            } catch (error) {
+            // Stage A: fire in background — don't block the user moving to page 4
+            stageAPromise = createAffiliateAfterPage3().catch(error => {
                 console.error('Error creating affiliate after Page 3:', error);
-                // Do not block the flow; final submission will fall back to legacy behavior
-            }
+                // Final submission will fall back to legacy behavior
+            });
             nextPage();
         }
     });
@@ -1526,15 +1526,9 @@ function setupEventListeners() {
     setupCountryInputs();
 
     // Continue Button 4
-    document.getElementById('continueBtn4').addEventListener('click', async function() {
+    document.getElementById('continueBtn4').addEventListener('click', function() {
         if (validatePage4()) {
-            // Update commission type immediately when Continue is clicked
-            try {
-                await updateCommissionTypeAfterPage4();
-            } catch (error) {
-                console.error('Error updating commission type after Page 4:', error);
-                // Don't block the flow
-            }
+            // commission_type is already sent in Stage B (finalize_affiliate), no extra call needed
             nextPage();
         }
     });
@@ -2418,6 +2412,12 @@ async function createTapfiliateAffiliate() {
     const programId = PROGRAM_ID_MAP[formState.program];
     if (!programId) {
         throw new Error('Program selection is missing or invalid.');
+    }
+
+    // If Stage A is still in-flight, wait for it before deciding the payload
+    if (stageAPromise && !createdAffiliateId) {
+        console.log('Waiting for Stage A to complete before finalizing...');
+        await stageAPromise;
     }
 
     // Decide which payload to send based on whether Stage A has already created an affiliate
