@@ -61,6 +61,125 @@ const formState = {
     wantsDemoCall: false
 };
 
+const SIGNUP_FLOW_STORAGE_KEY = 'stasher_signup_flow_state_v1';
+
+function persistSignupFlowState() {
+    try {
+        sessionStorage.setItem(SIGNUP_FLOW_STORAGE_KEY, JSON.stringify({
+            ...formState,
+            isInFlow: true
+        }));
+    } catch (error) {
+        console.warn('Could not persist signup flow state:', error);
+    }
+}
+
+function loadSignupFlowState() {
+    try {
+        const raw = sessionStorage.getItem(SIGNUP_FLOW_STORAGE_KEY);
+        if (!raw) return null;
+        const savedState = JSON.parse(raw);
+        if (!savedState || !savedState.isInFlow) return null;
+        const currentPage = Number(savedState.currentPage);
+        if (!Number.isInteger(currentPage) || currentPage < 1 || currentPage > 5) {
+            return null;
+        }
+        return savedState;
+    } catch (error) {
+        console.warn('Could not load signup flow state:', error);
+        return null;
+    }
+}
+
+function clearSignupFlowState() {
+    try {
+        sessionStorage.removeItem(SIGNUP_FLOW_STORAGE_KEY);
+    } catch (error) {
+        console.warn('Could not clear signup flow state:', error);
+    }
+}
+
+function syncFormUiFromState() {
+    const languageSelect = document.getElementById('languageSelect');
+    if (languageSelect && formState.language) {
+        languageSelect.value = formState.language;
+    }
+
+    document.querySelectorAll('.company-type-box').forEach(box => {
+        box.classList.toggle('selected', box.dataset.type === formState.companyType);
+    });
+
+    document.querySelectorAll('.currency-box').forEach(box => {
+        box.classList.toggle('selected', box.dataset.currency === formState.program);
+    });
+
+    ['firstName', 'lastName', 'email', 'password'].forEach(field => {
+        const input = document.getElementById(field);
+        if (input) {
+            input.value = formState[field] || '';
+        }
+    });
+
+    const acceptTerms = document.getElementById('acceptTerms');
+    if (acceptTerms) {
+        acceptTerms.checked = !!formState.acceptTerms;
+    }
+
+    const fieldValues = {
+        city: formState.city,
+        country: formState.country,
+        companyName: formState.companyName,
+        companyWebsite: formState.companyWebsite,
+        numberOfProperties: formState.numberOfProperties,
+        city2: formState.city,
+        country2: formState.country,
+        companyName2: formState.companyName,
+        companyWebsite2: formState.companyWebsite,
+        companyDescription: formState.companyDescription
+    };
+
+    Object.entries(fieldValues).forEach(([fieldId, value]) => {
+        const input = document.getElementById(fieldId);
+        if (input) {
+            input.value = value || '';
+        }
+    });
+
+    ['commissionType', 'commissionType2'].forEach(fieldId => {
+        const select = document.getElementById(fieldId);
+        if (select) {
+            select.value = formState.commissionType || '';
+        }
+    });
+}
+
+function restoreSignupFlow() {
+    const savedState = loadSignupFlowState();
+    if (!savedState) return false;
+
+    Object.assign(formState, savedState);
+    syncFormUiFromState();
+
+    const landingPage = document.getElementById('landingPage');
+    const progressContainer = document.getElementById('progressContainer');
+    const formContainer = document.getElementById('formContainer');
+
+    if (landingPage) {
+        landingPage.style.display = 'none';
+    }
+    if (progressContainer) {
+        progressContainer.style.display = 'block';
+    }
+    if (formContainer) {
+        formContainer.style.display = 'block';
+    }
+
+    showPage(formState.currentPage);
+    updateProgressBar(formState.currentPage);
+    updateContinueButton(formState.currentPage);
+    return true;
+}
+
 // Affiliate ID created after Page 3 (Stage A)
 let createdAffiliateId = null;
 
@@ -1080,6 +1199,7 @@ function showSignupForm() {
     showPage(1);
     updateProgressBar(1);
     updateContinueButton(1);
+    persistSignupFlowState();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1118,6 +1238,7 @@ function redirectToPage2WithCompanyType(companyType) {
     showPage(2);
     updateProgressBar(2);
     updateContinueButton(2);
+    persistSignupFlowState();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1155,6 +1276,7 @@ function goBackToLandingPage() {
     showPage(1);
     updateProgressBar(1);
     updateContinueButton(1);
+    clearSignupFlowState();
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1162,6 +1284,10 @@ function goBackToLandingPage() {
 
 // Initialize Form
 function initializeForm() {
+    if (restoreSignupFlow()) {
+        return;
+    }
+
     // Start on Page 1 (now Company Type)
     showPage(1);
     updateProgressBar(1);
@@ -1453,6 +1579,18 @@ function setupEventListeners() {
             goBackToLandingPage();
         });
     }
+
+    document.addEventListener('input', function() {
+        if (loadSignupFlowState()) {
+            persistSignupFlowState();
+        }
+    });
+
+    document.addEventListener('change', function() {
+        if (loadSignupFlowState()) {
+            persistSignupFlowState();
+        }
+    });
 }
 
 function initI18n() {
@@ -1745,6 +1883,7 @@ function nextPage() {
         showPage(formState.currentPage);
         updateProgressBar(formState.currentPage);
         updateContinueButton(formState.currentPage);
+        persistSignupFlowState();
     }
 }
 
@@ -1754,6 +1893,7 @@ function previousPage() {
         showPage(formState.currentPage);
         updateProgressBar(formState.currentPage);
         updateContinueButton(formState.currentPage);
+        persistSignupFlowState();
     }
 }
 
@@ -1814,6 +1954,7 @@ function navigateToStep(stepNumber) {
         showPage(stepNumber);
         updateProgressBar(stepNumber);
         updateContinueButton(stepNumber);
+        persistSignupFlowState();
     }
 }
 
@@ -2048,6 +2189,7 @@ async function handleSkipDemo() {
 // Show Confirmation Page
 function showConfirmationPage() {
     console.log('showConfirmationPage called');
+    clearSignupFlowState();
     
     // Hide landing page
     const landingPage = document.getElementById('landingPage');

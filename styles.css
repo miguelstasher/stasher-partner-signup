@@ -594,14 +594,7 @@ body {
 }
 
 .timeline-steps::before {
-    content: '';
-    position: absolute;
-    top: 50px;
-    left: 36px;
-    right: 36px;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(20, 46, 89, 0.15), rgba(20, 46, 89, 0.05));
-    z-index: 0;
+    display: none;
 }
 
 .timeline-step {
@@ -1828,8 +1821,9 @@ body {
 }
 
 .confirmation-icon img {
-    width: 64px;
-    height: 64px;
+    width: min(100%, 220px);
+    height: auto;
+    max-width: 220px;
     object-fit: contain;
 }
 
@@ -2454,14 +2448,24 @@ button, .currency-box, .company-type-box {
     }
 
     .trusted-brands-logos {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-items: center;
         align-items: center;
         gap: 15px;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .trusted-brand-logo {
         width: 100%;
-        max-width: 200px;
+        max-width: 180px;
+        margin: 0 auto;
+    }
+
+    .trusted-brand-logo img {
+        display: block;
         margin: 0 auto;
     }
 
