@@ -48,6 +48,14 @@
             <div class="landing-content">
                 <div class="landing-hero">
                     <h1 class="landing-title">Join Stasher's Affiliate Program</h1>
+
+                    <div class="pf-row" aria-live="polite" aria-atomic="true">
+                        <span class="pf-static">Perfect for</span>
+                        <span class="pf-pill-wrap">
+                            <span class="pf-pill" id="pfPill">Airbnbs</span>
+                        </span>
+                    </div>
+
                     <p class="landing-subtitle">Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.</p>
                     
                     <div class="landing-highlights">
@@ -969,5 +977,66 @@
     </div>
 
     <script src="script.js" defer></script>
+
+    <!-- "Perfect for" rotating pill — self-contained, no deps -->
+    <script>
+    (function () {
+        var words = [
+            'Airbnbs',
+            'Property Managers',
+            'Blogs',
+            'Venues',
+            'Museums',
+            'Theatres',
+            'Arenas',
+            'Transportation Hubs'
+        ];
+        var current = 0;
+        var pill;
+        var HOLD = 2600;   // ms visible
+        var OUT  = 340;    // ms exit transition
+        var IN   = 380;    // ms enter transition
+
+        function cycle() {
+            if (!pill) return;
+            // Exit
+            pill.style.transition = 'opacity ' + OUT + 'ms ease, transform ' + OUT + 'ms ease';
+            pill.style.opacity = '0';
+            pill.style.transform = 'translateY(-10px)';
+
+            setTimeout(function () {
+                current = (current + 1) % words.length;
+                pill.textContent = words[current];
+                // Reset below, invisible
+                pill.style.transition = 'none';
+                pill.style.opacity = '0';
+                pill.style.transform = 'translateY(10px)';
+
+                // Force reflow then enter
+                void pill.offsetHeight;
+                pill.style.transition = 'opacity ' + IN + 'ms ease, transform ' + IN + 'ms ease';
+                pill.style.opacity = '1';
+                pill.style.transform = 'translateY(0)';
+
+                setTimeout(cycle, HOLD);
+            }, OUT);
+        }
+
+        function init() {
+            pill = document.getElementById('pfPill');
+            if (!pill) return;
+            // Set initial state
+            pill.style.opacity = '1';
+            pill.style.transform = 'translateY(0)';
+            setTimeout(cycle, HOLD);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    }());
+    </script>
 </body>
 </html>
