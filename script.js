@@ -324,6 +324,7 @@ const countries = [
 
 // Translation dictionaries
 const TEXT_TRANSLATIONS_DE = {
+    "Perfect for": "Perfekt für",
     "Join Stasher's Affiliate Program": "Treten Sie dem Stasher-Affiliate-Programm bei",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Helfen Sie Ihren Gästen oder Kunden, ihr Gepäck aufzubewahren und erhalten Sie zusätzliche Einnahmen, höhere Kundenzufriedenheit und bessere Bewertungen.",
     "Totally Free to Join": "Kostenlose Anmeldung",
@@ -496,6 +497,7 @@ const PLACEHOLDER_TRANSLATIONS_DE = {
 };
 
 const TEXT_TRANSLATIONS_FR = {
+    "Perfect for": "Parfait pour",
     "Join Stasher's Affiliate Program": "Rejoignez le programme d'affiliation Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aidez vos invités ou clients à stocker leurs bagages et recevez des revenus supplémentaires, une meilleure satisfaction client et de meilleures évaluations.",
     "Totally Free to Join": "Entièrement gratuit",
@@ -667,6 +669,7 @@ const PLACEHOLDER_TRANSLATIONS_FR = {
 };
 
 const TEXT_TRANSLATIONS_ES = {
+    "Perfect for": "Perfecto para",
     "Join Stasher's Affiliate Program": "Únete al programa de afiliados de Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Ayuda a tus huéspedes o clientes a guardar sus maletas y recibe ingresos adicionales, mayor satisfacción del cliente y mejores reseñas.",
     "Totally Free to Join": "Totalmente gratis",
@@ -825,6 +828,7 @@ const TEXT_TRANSLATIONS_ES = {
 };
 
 const TEXT_TRANSLATIONS_IT = {
+    "Perfect for": "Perfetto per",
     "Join Stasher's Affiliate Program": "Unisciti al programma di affiliazione Stasher",
     "Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.": "Aiuta i tuoi ospiti o clienti a conservare i bagagli e ricevi entrate extra, maggiore soddisfazione del cliente e recensioni migliori.",
     "Totally Free to Join": "Completamente gratuito",
@@ -1713,6 +1717,9 @@ function applyTranslations(language) {
     translateCheckboxText(language);
     translateFooterText(language);
     generateSummary();
+    if (typeof window.pfSetLanguage === 'function') {
+        window.pfSetLanguage(language);
+    }
 }
 
 function translateCheckboxText(language) {
