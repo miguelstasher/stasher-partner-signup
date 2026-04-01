@@ -1202,7 +1202,9 @@ function showSignupForm() {
     updateProgressBar(1);
     updateContinueButton(1);
     persistSignupFlowState();
-    // scrollSignupFlowIntoView runs via showPage(1)
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Redirect to Page 2 with preselected company type
@@ -1239,7 +1241,9 @@ function redirectToPage2WithCompanyType(companyType) {
     updateProgressBar(2);
     updateContinueButton(2);
     persistSignupFlowState();
-    // scrollSignupFlowIntoView runs via showPage(2)
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Initialize "Built For" section redirects
@@ -1845,29 +1849,7 @@ function setupPage4Listeners() {
     }
 }
 
-// Page Navigation — pin signup flow to top of viewport (below sticky header); no downward "push"
-var SIGNUP_SCROLL_HEADER_OFFSET = 72;
-
-function scrollSignupFlowIntoView() {
-    const progressContainer = document.getElementById('progressContainer');
-    if (!progressContainer) return;
-    const hidden = progressContainer.style.display === 'none' ||
-        window.getComputedStyle(progressContainer).display === 'none';
-    if (hidden) return;
-    var run = function () {
-        var rect = progressContainer.getBoundingClientRect();
-        var y = rect.top + window.scrollY - SIGNUP_SCROLL_HEADER_OFFSET;
-        window.scrollTo({ top: Math.max(0, y), left: 0, behavior: 'auto' });
-    };
-    requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-            run();
-            // Step 5 fills summary async to DOM; second scroll catches final height
-            requestAnimationFrame(run);
-        });
-    });
-}
-
+// Page Navigation
 function showPage(pageNumber) {
     document.querySelectorAll('.form-page').forEach(page => {
         page.classList.remove('active');
@@ -1887,8 +1869,17 @@ function showPage(pageNumber) {
     if (pageNumber === 5) {
         generateSummary();
     }
+}
 
-    scrollSignupFlowIntoView();
+function scrollToFormTop() {
+    const progressContainer = document.getElementById('progressContainer');
+    const target = progressContainer || document.getElementById('formContainer');
+    if (target) {
+        const offset = target.getBoundingClientRect().top + window.pageYOffset - 12;
+        window.scrollTo({ top: Math.max(0, offset), behavior: 'instant' });
+    } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
 }
 
 function nextPage() {
@@ -1898,6 +1889,7 @@ function nextPage() {
         updateProgressBar(formState.currentPage);
         updateContinueButton(formState.currentPage);
         persistSignupFlowState();
+        scrollToFormTop();
     }
 }
 
@@ -1908,6 +1900,7 @@ function previousPage() {
         updateProgressBar(formState.currentPage);
         updateContinueButton(formState.currentPage);
         persistSignupFlowState();
+        scrollToFormTop();
     }
 }
 
