@@ -2671,3 +2671,55 @@ button, .currency-box, .company-type-box {
     cursor: pointer;
 }
 
+/* ── "Perfect for" rotating pill ── */
+.pf-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.pf-static {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7a95;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+.pf-pill-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-width: 170px;
+}
+
+.pf-pill {
+    display: inline-block;
+    padding: 5px 14px;
+    line-height: 1.4;
+    border-radius: 30px;
+    background: #fde8ec;
+    color: #142e59;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: nowrap;
+    line-height: 1.4;
+    /* will-change tells the browser to composite this layer */
+    will-change: opacity, transform;
+}
+
+@media (max-width: 480px) {
+    .pf-row {
+        justify-content: center;
+    }
+
+    .pf-pill-wrap {
+        min-width: 0;
+        justify-content: flex-start;
+    }
+}

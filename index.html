@@ -47,7 +47,15 @@
         <div class="landing-page" id="landingPage">
             <div class="landing-content">
                 <div class="landing-hero">
+                    <div class="pf-row" aria-live="polite" aria-atomic="true">
+                        <span class="pf-static">Perfect for</span>
+                        <span class="pf-pill-wrap">
+                            <span class="pf-pill" id="pfPill">Airbnbs</span>
+                        </span>
+                    </div>
+
                     <h1 class="landing-title">Join Stasher's Affiliate Program</h1>
+
                     <p class="landing-subtitle">Help your guests or clients store their bags and receive extra revenue, higher customer satisfaction, and better reviews.</p>
                     
                     <div class="landing-highlights">
@@ -1038,5 +1046,77 @@
     </div>
 
     <script src="script.js" defer></script>
+
+    <!-- "Perfect for" rotating pill — self-contained, no deps -->
+    <script>
+    (function () {
+        var WORD_LISTS = {
+            en: ['Airbnbs', 'Property Managers', 'Blogs', 'Venues', 'Museums', 'Theatres', 'Arenas', 'Transportation Hubs'],
+            de: ['Airbnbs', 'Immobilienverwalter', 'Blogs', 'Veranstaltungsorte', 'Museen', 'Theater', 'Arenen', 'Verkehrsknotenpunkte'],
+            fr: ['Airbnbs', 'Gestionnaires immobiliers', 'Blogs', 'Salles', 'Musées', 'Théâtres', 'Arènes', 'Hubs de transport'],
+            es: ['Airbnbs', 'Administradores de propiedades', 'Blogs', 'Locales', 'Museos', 'Teatros', 'Arenas', 'Centros de transporte'],
+            it: ['Airbnbs', 'Gestori immobiliari', 'Blog', 'Location', 'Musei', 'Teatri', 'Arene', 'Hub di trasporti']
+        };
+
+        var currentLang = 'en';
+        var words = WORD_LISTS.en;
+        var current = 0;
+        var pill;
+        var timer = null;
+        var HOLD = 2600;
+        var OUT  = 340;
+        var IN   = 380;
+
+        function showWord(word) {
+            if (!pill) return;
+            pill.style.transition = 'none';
+            pill.style.opacity = '0';
+            pill.style.transform = 'translateY(10px)';
+            pill.textContent = word;
+            void pill.offsetHeight;
+            pill.style.transition = 'opacity ' + IN + 'ms ease, transform ' + IN + 'ms ease';
+            pill.style.opacity = '1';
+            pill.style.transform = 'translateY(0)';
+        }
+
+        function cycle() {
+            if (!pill) return;
+            pill.style.transition = 'opacity ' + OUT + 'ms ease, transform ' + OUT + 'ms ease';
+            pill.style.opacity = '0';
+            pill.style.transform = 'translateY(-10px)';
+
+            timer = setTimeout(function () {
+                current = (current + 1) % words.length;
+                showWord(words[current]);
+                timer = setTimeout(cycle, HOLD);
+            }, OUT);
+        }
+
+        function init() {
+            pill = document.getElementById('pfPill');
+            if (!pill) return;
+            pill.style.opacity = '1';
+            pill.style.transform = 'translateY(0)';
+            timer = setTimeout(cycle, HOLD);
+        }
+
+        window.pfSetLanguage = function (lang) {
+            var list = WORD_LISTS[lang] || WORD_LISTS.en;
+            if (list === words) return;
+            currentLang = lang;
+            words = list;
+            current = 0;
+            if (timer) { clearTimeout(timer); timer = null; }
+            showWord(words[current]);
+            timer = setTimeout(cycle, HOLD);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    }());
+    </script>
 </body>
 </html>
