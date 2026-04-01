@@ -2682,8 +2682,8 @@ button, .currency-box, .company-type-box {
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 14px 0 18px;
+    gap: 6px;
+    margin: 12px 0 16px;
 }
 
 .pf-static {
@@ -2705,7 +2705,8 @@ button, .currency-box, .company-type-box {
 
 .pf-pill {
     display: inline-block;
-    padding: 10px 16px;
+    padding: 5px 14px;
+    line-height: 1.4;
     border-radius: 30px;
     background: #fde8ec;
     color: #142e59;
