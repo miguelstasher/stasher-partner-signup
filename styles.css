@@ -454,15 +454,11 @@ body {
     overflow: hidden;
 }
 
-.company-type-icon img {
-    border-radius: 14px;
-    width: 137.5%;
-    height: 137.5%;
-    object-fit: contain;
+.company-type-icon svg {
+    width: 40px;
+    height: 40px;
     display: block;
-    filter: brightness(0.95) saturate(1.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: scale(1);
 }
 
 .company-type-item:hover .company-type-icon {
@@ -471,8 +467,7 @@ body {
     background: linear-gradient(135deg, #e8f0ff 0%, #d6e7ff 100%);
 }
 
-.company-type-item:hover .company-type-icon img {
-    filter: brightness(1.05) saturate(1.2);
+.company-type-item:hover .company-type-icon svg {
     transform: scale(1.05);
 }
 
