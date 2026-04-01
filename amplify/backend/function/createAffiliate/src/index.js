@@ -10,11 +10,10 @@ const PROGRAM_ID_MAP = {
     'AUD': 'jg-affiliate-program'
 };
 
-// Cache for custom field keys (fetched from Tapfiliate API)
+// Cache for custom field keys (fallback when env vars not set)
 let customFieldsCache = null;
 let cacheTimestamp = null;
-// Keep cache very short while debugging; we bypass if Commission type missing
-const CACHE_DURATION = 0; // temporarily disable cache to force fresh field map
+const CACHE_DURATION = 300000; // 5 minutes
 
 // Normalize field labels for resilient lookup (case/spacing-insensitive)
 function normalizeFieldLabel(label) {
@@ -22,24 +21,41 @@ function normalizeFieldLabel(label) {
 }
 
 /**
- * Fetch custom field keys from Tapfiliate API
- * Returns a map of field titles to field IDs
+ * Fetch custom field keys from Tapfiliate API (or read from env vars).
+ * Returns a map of normalized field titles to field IDs.
+ *
+ * Set these env vars in the Lambda console to skip the extra API call:
+ *   TAPFILIATE_FIELD_KEY_COMPANY_TYPE
+ *   TAPFILIATE_FIELD_KEY_COMMISSION_TYPE
+ *   TAPFILIATE_FIELD_KEY_DEMO_CALL
  */
 async function getCustomFieldKeys(apiKey) {
+    // Fast path: use environment variables if all three keys are configured
+    const envCompanyType = process.env.TAPFILIATE_FIELD_KEY_COMPANY_TYPE;
+    const envCommissionType = process.env.TAPFILIATE_FIELD_KEY_COMMISSION_TYPE;
+    const envDemoCall = process.env.TAPFILIATE_FIELD_KEY_DEMO_CALL;
+
+    if (envCompanyType && envCommissionType && envDemoCall) {
+        console.log('✅ Using custom field keys from environment variables (no API call)');
+        return {
+            [normalizeFieldLabel('Company type')]: envCompanyType,
+            [normalizeFieldLabel('Commission type')]: envCommissionType,
+            [normalizeFieldLabel('Free DEMO call?')]: envDemoCall,
+            [normalizeFieldLabel('Do you want a FREE DEMO call?')]: envDemoCall
+        };
+    }
+
+    // Fallback: fetch from Tapfiliate API with caching
     const now = Date.now();
     const normalizedCommission = normalizeFieldLabel('Commission type');
-    
-    // Return cached data if still valid AND contains Commission type
+
     if (customFieldsCache && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION) && customFieldsCache[normalizedCommission]) {
         console.log('✅ Using cached custom field keys');
         return customFieldsCache;
     }
-    if (customFieldsCache && !customFieldsCache[normalizedCommission]) {
-        console.log('♻️ Cache missing Commission type; forcing refresh');
-    }
-    
-    console.log('🔍 Fetching custom field keys from Tapfiliate...');
-    
+
+    console.log('🔍 Fetching custom field keys from Tapfiliate API (set env vars to skip this)...');
+
     try {
         const response = await fetch(`${TAPFILIATE_BASE_URL}affiliates/custom-fields/`, {
             method: 'GET',
@@ -48,41 +64,34 @@ async function getCustomFieldKeys(apiKey) {
                 'Content-Type': 'application/json'
             }
         });
-        
+
         if (!response.ok) {
             console.error('⚠️ Failed to fetch custom fields:', response.status);
             return null;
         }
-        
+
         const fields = await response.json();
-        
-        console.log('🔍 DEBUG: Raw custom fields from Tapfiliate API:', JSON.stringify(fields, null, 2));
-        
+
         // Create a map: normalized title -> key (prefer field.key, fallback to id)
         const fieldMap = {};
         if (Array.isArray(fields)) {
             fields.forEach(field => {
                 if (field.title && (field.key || field.id)) {
                     const normalizedTitle = normalizeFieldLabel(field.title);
-                    const keyOrId = field.key || field.id;
-                    fieldMap[normalizedTitle] = keyOrId;
-                    console.log(`🔍 DEBUG: Mapped field "${field.title}" (normalized: "${normalizedTitle}") -> Key/ID: ${keyOrId}`);
+                    fieldMap[normalizedTitle] = field.key || field.id;
                 }
             });
         }
-        
+
         customFieldsCache = fieldMap;
         cacheTimestamp = now;
-        
-        console.log('✅ Custom field keys cached (normalized titles):', fieldMap);
-        const commissionKey = fieldMap[normalizedCommission];
-        if (!commissionKey) {
+
+        console.log('✅ Custom field keys fetched and cached:', fieldMap);
+        if (!fieldMap[normalizedCommission]) {
             console.error('❌ "Commission type" not found in fetched custom fields. Available fields:', Object.keys(fieldMap));
-        } else {
-            console.log('🔍 DEBUG: Found "Commission type" Key/ID:', commissionKey);
         }
         return fieldMap;
-        
+
     } catch (error) {
         console.error('❌ Error fetching custom fields:', error);
         return null;
@@ -631,91 +640,54 @@ exports.handler = async (event) => {
                 console.log('[Stage B] Final custom_fields payload:', JSON.stringify(customFields, null, 2));
             }
 
-            // Only update if we have something to update
-            if (Object.keys(updatePayload).length > 0) {
-                try {
-                    console.log('[Stage B] Updating affiliate with complete info...');
-                    const updateResponse = await fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliate_id}/`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Api-Key': TAPFILIATE_API_KEY
-                        },
-                        body: JSON.stringify(updatePayload)
-                    });
+            // Run update, meta-data, and enrollment in parallel — they are independent
+            console.log('[Stage B] Running update, meta-data, and enrollment in parallel...');
 
-                    if (!updateResponse.ok) {
-                        const errorData = await updateResponse.text();
-                        console.error('[Stage B] ⚠️ Failed to update affiliate:', errorData);
-                        // Continue anyway - not critical
+            const updatePromise = Object.keys(updatePayload).length > 0
+                ? fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliate_id}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
+                    body: JSON.stringify(updatePayload)
+                }).then(async r => {
+                    if (!r.ok) console.error('[Stage B] ⚠️ Failed to update affiliate:', await r.text());
+                    else console.log('[Stage B] ✅ Affiliate updated with complete info');
+                }).catch(e => console.error('[Stage B] Error updating affiliate:', e))
+                : Promise.resolve();
+
+            const metaPromise = (metadata && metadata.website)
+                ? fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliate_id}/meta-data/website/`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
+                    body: JSON.stringify({ value: metadata.website })
+                }).then(async r => {
+                    if (!r.ok) {
+                        const t = await r.text();
+                        console.error('[Stage B] Failed to set website meta data:', t.substring(0, 1000));
                     } else {
-                        console.log('[Stage B] ✅ Affiliate updated with complete info');
+                        console.log('[Stage B] ✅ Website meta data set');
                     }
-                } catch (updateError) {
-                    console.error('[Stage B] Error updating affiliate:', updateError);
-                    // Continue anyway - not critical
-                }
-            }
+                }).catch(e => console.error('[Stage B] Error setting website meta data:', e))
+                : Promise.resolve();
 
-            // Optionally set website meta-data if provided
-            if (metadata && metadata.website) {
-                try {
-                    console.log('[Stage B] Setting affiliate website meta data...');
-                    const metaUrlFinalize = `${TAPFILIATE_BASE_URL}affiliates/${affiliate_id}/meta-data/website/`;
-                    const metaBodyFinalize = { value: metadata.website };
-
-                    const metaResponseFinalize = await fetch(metaUrlFinalize, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Api-Key': TAPFILIATE_API_KEY
-                        },
-                        body: JSON.stringify(metaBodyFinalize)
-                    });
-
-                    console.log('[Stage B] Website meta data response status:', metaResponseFinalize.status);
-
-                    if (!metaResponseFinalize.ok) {
-                        const metaTextFinalize = await metaResponseFinalize.text();
-                        const trimmedMetaFinalize = metaTextFinalize.length > 1000 ? metaTextFinalize.substring(0, 1000) + '...' : metaTextFinalize;
-                        console.error('[Stage B] Failed to set website meta data (trimmed):', trimmedMetaFinalize);
-                    }
-                } catch (metaErrorFinalize) {
-                    console.error('[Stage B] Error while setting website meta data:', metaErrorFinalize);
-                }
-            }
-
-            // Enroll existing affiliate in program (Pending status, not auto-approved)
-            console.log('[Stage B] Enrolling affiliate in program:', mappedProgramIdFinalize);
-            console.log('[Stage B] Affiliate ID:', affiliate_id);
-
-            const enrollmentPayloadFinalize = {
-                affiliate: {
-                    id: affiliate_id
-                },
-                approved: null
-            };
-
-            console.log('[Stage B] Enrollment payload:', JSON.stringify(enrollmentPayloadFinalize, null, 2));
+            const enrollmentPayloadFinalize = { affiliate: { id: affiliate_id }, approved: null };
             console.log('[Stage B] Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/?send_welcome_email=false`);
 
-            const addToProgramResponseFinalize = await fetch(
+            const addToProgramResponseFinalize = fetch(
                 `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/?send_welcome_email=false`,
                 {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Api-Key': TAPFILIATE_API_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
                     body: JSON.stringify(enrollmentPayloadFinalize)
                 }
             );
 
-            console.log('[Stage B] Enrollment response status:', addToProgramResponseFinalize.status);
+            const [, , addToProgramResponseFinalizeResolved] = await Promise.all([updatePromise, metaPromise, addToProgramResponseFinalize]);
 
-            if (!addToProgramResponseFinalize.ok) {
-                const contentTypeFinalize = addToProgramResponseFinalize.headers.get('content-type');
-                const errorTextFinalize = await addToProgramResponseFinalize.text();
+            console.log('[Stage B] Enrollment response status:', addToProgramResponseFinalizeResolved.status);
+
+            if (!addToProgramResponseFinalizeResolved.ok) {
+                const contentTypeFinalize = addToProgramResponseFinalizeResolved.headers.get('content-type');
+                const errorTextFinalize = await addToProgramResponseFinalizeResolved.text();
 
                 const trimmedErrorFinalize = errorTextFinalize.length > 1000 ? errorTextFinalize.substring(0, 1000) + '...' : errorTextFinalize;
                 console.error('[Stage B] Failed to enroll affiliate in program (trimmed):', trimmedErrorFinalize);
@@ -727,22 +699,22 @@ exports.handler = async (event) => {
                         headers,
                         body: JSON.stringify({
                             error: 'Something went wrong while creating your affiliate account. Please try again later.',
-                            status: addToProgramResponseFinalize.status
+                            status: addToProgramResponseFinalizeResolved.status
                         })
                     };
                 }
 
                 return {
-                    statusCode: addToProgramResponseFinalize.status || 500,
+                    statusCode: addToProgramResponseFinalizeResolved.status || 500,
                     headers,
                     body: JSON.stringify({
                         error: 'Affiliate created but failed to enroll in program.',
-                        status: addToProgramResponseFinalize.status
+                        status: addToProgramResponseFinalizeResolved.status
                     })
                 };
             }
 
-            const programResultFinalize = await addToProgramResponseFinalize.json();
+            const programResultFinalize = await addToProgramResponseFinalizeResolved.json();
 
             // Set parent affiliate AFTER successful enrollment (for MLM functionality)
             const parentIdFinalize = validateParentId(affiliateData.parent_id);
@@ -1124,60 +1096,36 @@ exports.handler = async (event) => {
             };
         }
 
-        // Step 1.5: Set website as meta-data if provided
-        if (affiliateData.metadata && affiliateData.metadata.website) {
-            try {
-                console.log('Setting affiliate website meta data...');
-                const metaUrl = `${TAPFILIATE_BASE_URL}affiliates/${affiliate.id}/meta-data/website/`;
-                const metaBody = { value: affiliateData.metadata.website };
+        // Step 1.5 + Step 2: Set website meta-data and enroll in program in parallel
+        console.log('Running meta-data and enrollment in parallel...');
 
-                const metaResponse = await fetch(metaUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Api-Key': TAPFILIATE_API_KEY
-                    },
-                    body: JSON.stringify(metaBody)
-                });
-
-                console.log('Website meta data response status:', metaResponse.status);
-
-                if (!metaResponse.ok) {
-                    const metaText = await metaResponse.text();
-                    const trimmedMeta = metaText.length > 1000 ? metaText.substring(0, 1000) + '...' : metaText;
-                    console.error('Failed to set website meta data (trimmed):', trimmedMeta);
+        const legacyMetaPromise = (affiliateData.metadata && affiliateData.metadata.website)
+            ? fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliate.id}/meta-data/website/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
+                body: JSON.stringify({ value: affiliateData.metadata.website })
+            }).then(async r => {
+                console.log('Website meta data response status:', r.status);
+                if (!r.ok) {
+                    const t = await r.text();
+                    console.error('Failed to set website meta data:', t.substring(0, 1000));
                 }
-            } catch (metaError) {
-                console.error('Error while setting website meta data:', metaError);
-            }
-        }
+            }).catch(e => console.error('Error setting website meta data:', e))
+            : Promise.resolve();
 
-        // Step 2: Enroll affiliate in program (Pending status, not auto-approved)
-        console.log('Enrolling affiliate in program:', mappedProgramId);
-        console.log('Affiliate ID:', affiliate.id);
-        
-        // Enrollment payload according to Tapfiliate API docs
-        const enrollmentPayload = {
-            affiliate: {
-                id: affiliate.id
-            },
-            approved: null
-        };
-        
-        console.log('Enrollment payload:', JSON.stringify(enrollmentPayload, null, 2));
+        const enrollmentPayload = { affiliate: { id: affiliate.id }, approved: null };
         console.log('Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/?send_welcome_email=false`);
-        
-        const addToProgramResponse = await fetch(
+
+        const legacyEnrollPromise = fetch(
             `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/?send_welcome_email=false`,
             {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Api-Key': TAPFILIATE_API_KEY
-                },
+                headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
                 body: JSON.stringify(enrollmentPayload)
             }
         );
+
+        const [, addToProgramResponse] = await Promise.all([legacyMetaPromise, legacyEnrollPromise]);
 
         console.log('Enrollment response status:', addToProgramResponse.status);
 
