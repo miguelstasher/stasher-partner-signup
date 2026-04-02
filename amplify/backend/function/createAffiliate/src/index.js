@@ -669,11 +669,12 @@ exports.handler = async (event) => {
                 }).catch(e => console.error('[Stage B] Error setting website meta data:', e))
                 : Promise.resolve();
 
-            const enrollmentPayloadFinalize = { affiliate: { id: affiliate_id } };
-            console.log('[Stage B] Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/?send_welcome_email=false`);
+            // approved: null = pending state (not auto-approved, not rejected)
+            const enrollmentPayloadFinalize = { affiliate: { id: affiliate_id }, approved: null };
+            console.log('[Stage B] Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/`);
 
             const addToProgramResponseFinalize = fetch(
-                `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/?send_welcome_email=false`,
+                `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
@@ -1113,11 +1114,12 @@ exports.handler = async (event) => {
             }).catch(e => console.error('Error setting website meta data:', e))
             : Promise.resolve();
 
-        const enrollmentPayload = { affiliate: { id: affiliate.id } };
-        console.log('Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/?send_welcome_email=false`);
+        // approved: null = pending state (not auto-approved, not rejected)
+        const enrollmentPayload = { affiliate: { id: affiliate.id }, approved: null };
+        console.log('Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/`);
 
         const legacyEnrollPromise = fetch(
-            `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/?send_welcome_email=false`,
+            `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Api-Key': TAPFILIATE_API_KEY },
