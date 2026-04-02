@@ -2148,49 +2148,19 @@ function generateSummary() {
 
 // Handle Skip Demo
 async function handleSkipDemo() {
-    const skipDemoLink = document.getElementById('skipDemoLink');
-    const skipDemoLoading = document.getElementById('skipDemoLoading');
-    if (skipDemoLink) {
-        skipDemoLink.setAttribute('aria-busy', 'true');
-        skipDemoLink.style.pointerEvents = 'none';
-        skipDemoLink.style.opacity = '0.6';
-    }
+    // Show confirmation page immediately — don't wait for the API call
+    showConfirmationPage();
 
-    if (skipDemoLoading) {
-        skipDemoLoading.style.display = 'flex';
-    }
-
-    try {
-        // Complete form submission - send data to Tapfiliate
-        console.log('Submitting form to Tapfiliate...');
-        const result = await createTapfiliateAffiliate();
-        
+    // Fire enrollment in background
+    createTapfiliateAffiliate().then(result => {
         if (result && result.success) {
-            // Show confirmation page on success
-            console.log('Form submitted successfully, showing confirmation page');
-            showConfirmationPage();
+            console.log('Form submitted successfully to Tapfiliate');
         } else {
-            // API call completed but result indicates failure - still show confirmation page
-            console.warn('Form submission had issues, but showing confirmation page anyway:', result);
-            showConfirmationPage();
+            console.warn('Form submission to Tapfiliate had issues:', result);
         }
-    } catch (error) {
+    }).catch(error => {
         console.error('Error submitting form to Tapfiliate:', error);
-        // Even on error, show confirmation page (user has completed the form)
-        console.warn('Error occurred, but showing confirmation page anyway');
-        showConfirmationPage();
-    } finally {
-        // Reset button state
-        if (skipDemoLink) {
-            skipDemoLink.removeAttribute('aria-busy');
-            skipDemoLink.style.pointerEvents = 'auto';
-            skipDemoLink.style.opacity = '1';
-        }
-
-        if (skipDemoLoading) {
-            skipDemoLoading.style.display = 'none';
-        }
-    }
+    });
 }
 
 // Show Confirmation Page
@@ -2313,7 +2283,7 @@ async function createAffiliateAfterPage3() {
 
     console.log('Stage A: Creating affiliate after Page 3 with payload:', JSON.stringify({ ...payload, password: '***MASKED***' }, null, 2));
 
-    showApiLoading();
+    // Stage A runs silently in the background — no loading overlay so page 4 is immediately usable
     try {
         const response = await fetch(BACKEND_API_URL, {
             method: 'POST',
@@ -2362,8 +2332,6 @@ async function createAffiliateAfterPage3() {
     } catch (error) {
         console.error('Stage A: Error creating affiliate after Page 3:', error);
         // Don't throw - allow fallback to legacy mode
-    } finally {
-        hideApiLoading();
     }
 }
 
@@ -2383,7 +2351,6 @@ async function updateCommissionTypeAfterPage4() {
 
     console.log('Updating affiliate with commission type:', payload);
 
-    showApiLoading();
     try {
         const response = await fetch(BACKEND_API_URL, {
             method: 'POST',
@@ -2404,8 +2371,6 @@ async function updateCommissionTypeAfterPage4() {
     } catch (error) {
         console.error('Error updating commission type:', error);
         // Don't throw - allow flow to continue
-    } finally {
-        hideApiLoading();
     }
 }
 

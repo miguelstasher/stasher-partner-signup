@@ -669,7 +669,7 @@ exports.handler = async (event) => {
                 }).catch(e => console.error('[Stage B] Error setting website meta data:', e))
                 : Promise.resolve();
 
-            const enrollmentPayloadFinalize = { affiliate: { id: affiliate_id }, approved: null };
+            const enrollmentPayloadFinalize = { affiliate: { id: affiliate_id } };
             console.log('[Stage B] Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramIdFinalize}/affiliates/?send_welcome_email=false`);
 
             const addToProgramResponseFinalize = fetch(
@@ -1113,7 +1113,7 @@ exports.handler = async (event) => {
             }).catch(e => console.error('Error setting website meta data:', e))
             : Promise.resolve();
 
-        const enrollmentPayload = { affiliate: { id: affiliate.id }, approved: null };
+        const enrollmentPayload = { affiliate: { id: affiliate.id } };
         console.log('Enrollment endpoint:', `${TAPFILIATE_BASE_URL}programs/${mappedProgramId}/affiliates/?send_welcome_email=false`);
 
         const legacyEnrollPromise = fetch(
