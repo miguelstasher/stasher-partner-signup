@@ -82,7 +82,7 @@
         $loginBtn.textContent = 'Looking up…';
         $loginErr.hidden = true;
 
-        apiFetch('?action=login&email=' + encodeURIComponent(email))
+        apiPost({ mode: 'affiliate_login', email: email })
             .then(function (data) {
                 if (data.success && data.affiliate) {
                     session = data.affiliate;
@@ -144,7 +144,7 @@
     // ── Data loading ──────────────────────────────────────────────────────────
     function loadDashboardData() {
         if (!session || !session.id) return;
-        apiFetch('?action=dashboard&affiliate_id=' + encodeURIComponent(session.id))
+        apiPost({ mode: 'affiliate_dashboard', affiliate_id: session.id })
             .then(function (data) {
                 dashData = data;
                 renderStats(data);
@@ -341,8 +341,12 @@
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-    function apiFetch(qs) {
-        return fetch(API + qs).then(function (r) {
+    function apiPost(body) {
+        return fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        }).then(function (r) {
             return r.json().then(function (data) {
                 if (!r.ok) throw new Error(data.error || ('Server error ' + r.status));
                 return data;

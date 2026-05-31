@@ -4,12 +4,14 @@ This Lambda function handles affiliate creation and management via the Tapfiliat
 
 ## Functionality
 
-This function supports three modes:
+This function supports these modes:
 
 1. **create_affiliate_only** - Creates an affiliate account (after Page 3)
 2. **finalize_affiliate** - Finalizes affiliate info and enrolls in program (after last page)
 3. **update_custom_fields** - Updates custom fields only (after Page 4)
-4. **Legacy mode** - Creates affiliate and enrolls in one step (default behavior)
+4. **affiliate_login** - Partner portal: look up affiliate by email (POST)
+5. **affiliate_dashboard** - Partner portal: conversions + commissions (POST)
+6. **Legacy mode** - Creates affiliate and enrolls in one step (default behavior)
 
 ## Environment Variables
 

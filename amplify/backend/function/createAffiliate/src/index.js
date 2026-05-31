@@ -474,13 +474,12 @@ async function tapGet(path, apiKey) {
     return data;
 }
 
-async function handleAffiliateDashboard(event) {
+async function handleAffiliateDashboard(params) {
     const apiKey = process.env.TAPFILIATE_API_KEY;
     if (!apiKey) {
         return { statusCode: 500, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'API key not configured' }) };
     }
 
-    const params = event.queryStringParameters || {};
     const action = (params.action || '').trim();
 
     try {
@@ -550,9 +549,9 @@ exports.handler = async (event) => {
         return { statusCode: 200, headers: AFFILIATE_CORS, body: '' };
     }
 
-    // Affiliate dashboard GET endpoints
+    // Affiliate dashboard GET endpoints (requires GET on API Gateway)
     if (event.httpMethod === 'GET') {
-        return handleAffiliateDashboard(event);
+        return handleAffiliateDashboard(event.queryStringParameters || {});
     }
 
     // CORS headers for POST responses
@@ -595,6 +594,20 @@ exports.handler = async (event) => {
         console.log('Received affiliate data:', JSON.stringify(affiliateData, null, 2));
 
         const mode = affiliateData.mode || null;
+
+        // Partner portal: login and dashboard (POST — works with existing API Gateway)
+        if (mode === 'affiliate_login') {
+            return handleAffiliateDashboard({
+                action: 'login',
+                email: affiliateData.email
+            });
+        }
+        if (mode === 'affiliate_dashboard') {
+            return handleAffiliateDashboard({
+                action: 'dashboard',
+                affiliate_id: affiliateData.affiliate_id
+            });
+        }
 
         /**
          * MODE A: Create affiliate only (after Page 3)
