@@ -1,3 +1,5 @@
 User-agent: *
+Disallow: /partners-page-admin/
+Disallow: /partners-page-admin
 Disallow: /wl-admin/
 Disallow: /wl-admin

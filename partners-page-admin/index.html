@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>Partners Page Admin</title>
+    <base href="/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="partners-page-admin/admin.css">
+</head>
+<body data-wl-page="hub">
+    <div id="wlGate" class="wl-gate">
+        <form id="wlGateForm" class="wl-gate-card" autocomplete="off">
+            <input type="password" id="wlGateCode" class="wl-gate-input" placeholder=" " autocomplete="off" spellcheck="false" aria-label="Access code">
+            <button type="submit" class="wl-gate-btn">Enter</button>
+        </form>
+    </div>
+
+    <main id="wlApp" class="wl-app" hidden>
+        <header class="wl-app-header">
+            <div>
+                <h1>Partners Page Admin</h1>
+                <p class="wl-app-subtitle">Manage branded partner signup pages and per–parent-ID demo booking links.</p>
+            </div>
+            <button type="button" id="wlLogoutBtn" class="wl-link">Lock</button>
+        </header>
+
+        <nav class="wl-app-nav" aria-label="Partners Page Admin">
+            <a href="/partners-page-admin/" class="wl-app-nav-link wl-app-nav-link--active" data-wl-nav="hub">Home</a>
+            <a href="/partners-page-admin/branded.html" class="wl-app-nav-link" data-wl-nav="branded">Branded pages</a>
+            <a href="/partners-page-admin/demo.html" class="wl-app-nav-link" data-wl-nav="demo">Demo Links</a>
+            <a href="/partners-page-admin/github.html" class="wl-app-nav-link" data-wl-nav="github">GitHub Repo</a>
+        </nav>
+
+        <div class="wl-page-head">
+            <h2 class="wl-page-title">Choose a section</h2>
+            <p class="wl-muted">Connect <a href="/partners-page-admin/github.html">GitHub Repo</a> first if you have not saved a token on this device.</p>
+        </div>
+
+        <div class="wl-hub-grid">
+            <a href="/partners-page-admin/branded.html" class="wl-hub-card">
+                <h3>Branded pages</h3>
+                <p class="wl-muted">Custom logo, colours, and copy for visitors with <code>?via=CODE</code>.</p>
+            </a>
+            <a href="/partners-page-admin/demo.html" class="wl-hub-card">
+                <h3>Demo Links</h3>
+                <p class="wl-muted">Cal.com URLs for <strong>Book a Demo Call</strong> on the signup form, matched by parent ID.</p>
+            </a>
+            <a href="/partners-page-admin/github.html" class="wl-hub-card wl-hub-card--muted">
+                <h3>GitHub Repo</h3>
+                <p class="wl-muted">Personal access token and repository where changes are committed.</p>
+            </a>
+        </div>
+    </main>
+
+    <script src="partners-page-admin/admin-common.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.WLAdmin) WLAdmin.initGate();
+        });
+    </script>
+</body>
+</html>

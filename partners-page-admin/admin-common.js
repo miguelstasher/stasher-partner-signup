@@ -229,7 +229,7 @@
         if (path.indexOf('branded') >= 0) page = 'branded';
         else if (path.indexOf('demo') >= 0) page = 'demo';
         else if (path.indexOf('github') >= 0) page = 'github';
-        else if (path === '/wl-admin' || path.indexOf('/wl-admin/index') >= 0) page = 'hub';
+        else if (path === '/partners-page-admin' || path.indexOf('/partners-page-admin/index') >= 0) page = 'hub';
         document.body.dataset.wlPage = page;
         Array.prototype.forEach.call(document.querySelectorAll('.wl-app-nav-link'), function (link) {
             var target = link.getAttribute('data-wl-nav');
