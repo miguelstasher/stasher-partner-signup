@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>Branded pages — WL Admin</title>
+    <base href="/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="wl-admin/admin.css">
+</head>
+<body>
+    <div id="wlGate" class="wl-gate">
+        <form id="wlGateForm" class="wl-gate-card" autocomplete="off">
+            <input type="password" id="wlGateCode" class="wl-gate-input" placeholder=" " autocomplete="off" spellcheck="false" aria-label="Access code">
+            <button type="submit" class="wl-gate-btn">Enter</button>
+        </form>
+    </div>
+
+    <main id="wlApp" class="wl-app" hidden>
+        <header class="wl-app-header">
+            <div>
+                <h1>Whitelabel Admin</h1>
+                <p class="wl-app-subtitle">Branded partner pages when visitors land with <code>?via=CODE</code>.</p>
+            </div>
+            <button type="button" id="wlLogoutBtn" class="wl-link">Lock</button>
+        </header>
+
+        <nav class="wl-app-nav" aria-label="WL Admin">
+            <a href="/wl-admin/" class="wl-app-nav-link" data-wl-nav="hub">Home</a>
+            <a href="/wl-admin/branded.html" class="wl-app-nav-link" data-wl-nav="branded">Branded pages</a>
+            <a href="/wl-admin/demo.html" class="wl-app-nav-link" data-wl-nav="demo">Demo Links</a>
+            <a href="/wl-admin/github.html" class="wl-app-nav-link" data-wl-nav="github">GitHub Repo</a>
+        </nav>
+
+        <div class="wl-page-head">
+            <h2 class="wl-page-title">Branded pages</h2>
+            <p class="wl-muted">Custom logo, colours, and copy per parent ID. Each row shows the full shareable signup URL.</p>
+        </div>
+
+        <div id="wlGithubBanner" class="wl-banner wl-banner--warn" hidden>
+            <p><strong>GitHub Repo not connected.</strong> <a href="/wl-admin/github.html">Connect GitHub Repo</a> to create or edit branded pages.</p>
+        </div>
+
+        <div class="wl-card" id="wlFormCard" hidden>
+            <div class="wl-card-head">
+                <h3 id="wlFormTitle">Create a branded page</h3>
+                <button type="button" id="wlCancelEditBtn" class="wl-link" hidden>Cancel edit</button>
+            </div>
+
+            <form id="wlPartnerForm" class="wl-form" novalidate>
+                <input type="hidden" id="wlEditingCode" value="">
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerCode">Parent ID code</label>
+                    <input type="text" id="wlPartnerCode" placeholder="e.g. MARYSMITH or 2960514" pattern="[A-Za-z0-9_-]+" required spellcheck="false" autocomplete="off">
+                    <small class="wl-muted">Letters, numbers, dashes, underscores. Becomes <code>?via=CODE</code>. Cannot be changed after creation.</small>
+                    <div id="wlPartnerUrlPreview" class="wl-url-preview" hidden>
+                        <label class="wl-url-preview-label">Signup URL</label>
+                        <div class="wl-saved-url-row">
+                            <input type="text" id="wlPartnerUrlPreviewInput" readonly aria-label="Signup URL preview">
+                            <button type="button" id="wlPartnerUrlPreviewCopy" class="wl-btn-secondary wl-btn-compact">Copy</button>
+                            <a id="wlPartnerUrlPreviewOpen" class="wl-btn-secondary wl-btn-compact" href="#" target="_blank" rel="noopener">Open</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerLogo">Logo (PNG or JPEG)</label>
+                    <div class="wl-logo-preview" id="wlLogoPreview" hidden>
+                        <div class="wl-logo-preview-thumb">
+                            <img id="wlLogoPreviewImg" src="" alt="Current logo">
+                        </div>
+                        <div class="wl-logo-preview-body">
+                            <p class="wl-logo-preview-label" id="wlLogoPreviewLabel">Current logo</p>
+                            <p class="wl-muted" id="wlLogoPreviewHint">Pick a new file to replace it, or leave empty to keep this one.</p>
+                        </div>
+                    </div>
+                    <input type="file" id="wlPartnerLogo" accept="image/png,image/jpeg">
+                    <small class="wl-muted">Max 2 MB. Transparent PNG recommended. <span id="wlLogoEditHint" hidden>Leave empty to keep the current logo.</span></small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerColor">Brand colour</label>
+                    <div class="wl-color-row">
+                        <input type="color" id="wlPartnerColor" value="#142e59">
+                        <input type="text" id="wlPartnerColorHex" value="#142e59" pattern="^#?[0-9a-fA-F]{6}$" required spellcheck="false" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerHeroHeadline">Hero headline <span class="wl-muted">(optional)</span></label>
+                    <input type="text" id="wlPartnerHeroHeadline" maxlength="160" placeholder="Join Stasher's Affiliate Program" autocomplete="off">
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerHeroSubtitle">Hero subtitle <span class="wl-muted">(optional)</span></label>
+                    <textarea id="wlPartnerHeroSubtitle" rows="2" maxlength="320" placeholder="Help your guests or clients store their bags…"></textarea>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerTitle">Benefits title <span class="wl-muted">(optional)</span></label>
+                    <input type="text" id="wlPartnerTitle" maxlength="140" placeholder="The benefits of using Stasher with Guesty" autocomplete="off">
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerDescription">Description / benefits</label>
+                    <textarea id="wlPartnerDescription" rows="5" maxlength="800" required placeholder="• 10% commission paid to you on every booking"></textarea>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerCtaUrl">Integration guide link <span class="wl-muted">(optional)</span></label>
+                    <input type="url" id="wlPartnerCtaUrl" placeholder="https://docs.stasher.com/integration/guesty" autocomplete="off">
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlPartnerCtaLabel">Integration link label <span class="wl-muted">(optional)</span></label>
+                    <input type="text" id="wlPartnerCtaLabel" maxlength="140" placeholder="Click here to see how to integrate Stasher" autocomplete="off">
+                </div>
+
+                <div class="wl-form-actions">
+                    <button type="submit" class="wl-btn-primary" id="wlSaveBtn">Save branded page</button>
+                    <span id="wlSaveStatus" class="wl-status"></span>
+                </div>
+            </form>
+
+            <div id="wlSavedUrl" class="wl-saved-url" hidden>
+                <p class="wl-muted">Shareable URL (live within a few minutes after the build):</p>
+                <div class="wl-saved-url-row">
+                    <input type="text" id="wlSavedUrlInput" readonly>
+                    <button type="button" id="wlSavedUrlCopy" class="wl-btn-secondary">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="wl-card" id="wlListCard" hidden>
+            <div class="wl-card-head">
+                <h3>Live branded pages</h3>
+                <button type="button" id="wlRefreshBtn" class="wl-link">Refresh</button>
+            </div>
+            <div id="wlListContent" class="wl-list-content">
+                <p class="wl-muted">Loading…</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="wl-admin/admin-common.js" defer></script>
+    <script src="wl-admin/admin-branded.js" defer></script>
+</body>
+</html>

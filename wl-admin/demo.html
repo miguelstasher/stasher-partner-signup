@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>Demo Links — WL Admin</title>
+    <base href="/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="wl-admin/admin.css">
+</head>
+<body>
+    <div id="wlGate" class="wl-gate">
+        <form id="wlGateForm" class="wl-gate-card" autocomplete="off">
+            <input type="password" id="wlGateCode" class="wl-gate-input" placeholder=" " autocomplete="off" spellcheck="false" aria-label="Access code">
+            <button type="submit" class="wl-gate-btn">Enter</button>
+        </form>
+    </div>
+
+    <main id="wlApp" class="wl-app" hidden>
+        <header class="wl-app-header">
+            <div>
+                <h1>Whitelabel Admin</h1>
+                <p class="wl-app-subtitle">Cal.com links for <strong>Book a Demo Call</strong>, matched by parent ID.</p>
+            </div>
+            <button type="button" id="wlLogoutBtn" class="wl-link">Lock</button>
+        </header>
+
+        <nav class="wl-app-nav" aria-label="WL Admin">
+            <a href="/wl-admin/" class="wl-app-nav-link" data-wl-nav="hub">Home</a>
+            <a href="/wl-admin/branded.html" class="wl-app-nav-link" data-wl-nav="branded">Branded pages</a>
+            <a href="/wl-admin/demo.html" class="wl-app-nav-link" data-wl-nav="demo">Demo Links</a>
+            <a href="/wl-admin/github.html" class="wl-app-nav-link" data-wl-nav="github">GitHub Repo</a>
+        </nav>
+
+        <div class="wl-page-head">
+            <h2 class="wl-page-title">Demo Links</h2>
+            <p class="wl-muted">On signup step 5, <strong>Book a Demo Call</strong> opens the Cal.com URL for the visitor’s parent ID (<code>?via=</code> or stored referral).</p>
+        </div>
+
+        <div id="wlGithubBanner" class="wl-banner wl-banner--warn" hidden>
+            <p><strong>GitHub Repo not connected.</strong> <a href="/wl-admin/github.html">Connect GitHub Repo</a> to manage Demo Links.</p>
+        </div>
+
+        <div class="wl-card" id="wlDemoDefaultCard" hidden>
+            <div class="wl-card-head">
+                <h3>Default demo link</h3>
+            </div>
+            <p class="wl-muted">Used when no parent-specific link is configured.</p>
+            <div class="wl-form-row">
+                <label for="wlDemoDefaultUrl">Cal.com URL</label>
+                <input type="url" id="wlDemoDefaultUrl" placeholder="https://cal.com/periklis/15min" autocomplete="off">
+            </div>
+            <div class="wl-form-actions">
+                <button type="button" id="wlSaveDefaultDemoBtn" class="wl-btn-secondary">Save default</button>
+                <span id="wlDemoDefaultStatus" class="wl-status"></span>
+            </div>
+        </div>
+
+        <div class="wl-card" id="wlDemoFormCard" hidden>
+            <div class="wl-card-head">
+                <h3 id="wlDemoFormTitle">Add demo link</h3>
+                <button type="button" id="wlCancelDemoEditBtn" class="wl-link" hidden>Cancel edit</button>
+            </div>
+
+            <form id="wlDemoForm" class="wl-form" novalidate>
+                <input type="hidden" id="wlDemoEditingId" value="">
+
+                <div class="wl-form-row">
+                    <label for="wlDemoName">Name</label>
+                    <input type="text" id="wlDemoName" maxlength="80" placeholder="e.g. Guesty partnerships" required autocomplete="off">
+                    <small class="wl-muted">Internal label so you can recognise this link in the list.</small>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlDemoParentId">Parent ID code</label>
+                    <input type="text" id="wlDemoParentId" placeholder="e.g. 2960514 or MARYSMITH" pattern="[A-Za-z0-9_-]+" required spellcheck="false" autocomplete="off">
+                    <small class="wl-muted">Must match the <code>?via=</code> value on the signup URL. Cannot be changed after creation.</small>
+                    <div id="wlDemoSignupUrlPreview" class="wl-url-preview" hidden>
+                        <label class="wl-url-preview-label">Signup URL</label>
+                        <div class="wl-saved-url-row">
+                            <input type="text" id="wlDemoSignupUrlPreviewInput" readonly aria-label="Signup URL preview">
+                            <button type="button" id="wlDemoSignupUrlPreviewCopy" class="wl-btn-secondary wl-btn-compact">Copy</button>
+                            <a id="wlDemoSignupUrlPreviewOpen" class="wl-btn-secondary wl-btn-compact" href="#" target="_blank" rel="noopener">Open</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wl-form-row">
+                    <label for="wlDemoCalUrl">Cal.com link</label>
+                    <input type="url" id="wlDemoCalUrl" placeholder="https://cal.com/your-team/15min" required autocomplete="off">
+                    <small class="wl-muted">Opens in a new tab when the visitor clicks <strong>Book a Demo Call</strong>.</small>
+                </div>
+
+                <div class="wl-form-actions">
+                    <button type="submit" class="wl-btn-primary" id="wlDemoSaveBtn">Save demo link</button>
+                    <span id="wlDemoSaveStatus" class="wl-status"></span>
+                </div>
+            </form>
+        </div>
+
+        <div class="wl-card" id="wlDemoListCard" hidden>
+            <div class="wl-card-head">
+                <h3>Live Demo Links</h3>
+                <button type="button" id="wlDemoRefreshBtn" class="wl-link">Refresh</button>
+            </div>
+            <div id="wlDemoListContent" class="wl-list-content">
+                <p class="wl-muted">Loading…</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="wl-admin/admin-common.js" defer></script>
+    <script src="wl-admin/admin-demo.js" defer></script>
+</body>
+</html>

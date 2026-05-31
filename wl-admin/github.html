@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow">
+    <title>GitHub Repo — WL Admin</title>
+    <base href="/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="wl-admin/admin.css">
+</head>
+<body>
+    <div id="wlGate" class="wl-gate">
+        <form id="wlGateForm" class="wl-gate-card" autocomplete="off">
+            <input type="password" id="wlGateCode" class="wl-gate-input" placeholder=" " autocomplete="off" spellcheck="false" aria-label="Access code">
+            <button type="submit" class="wl-gate-btn">Enter</button>
+        </form>
+    </div>
+
+    <main id="wlApp" class="wl-app" hidden>
+        <header class="wl-app-header">
+            <div>
+                <h1>Whitelabel Admin</h1>
+                <p class="wl-app-subtitle">GitHub Repo connection for saving branded pages and Demo Links.</p>
+            </div>
+            <button type="button" id="wlLogoutBtn" class="wl-link">Lock</button>
+        </header>
+
+        <nav class="wl-app-nav" aria-label="WL Admin">
+            <a href="/wl-admin/" class="wl-app-nav-link" data-wl-nav="hub">Home</a>
+            <a href="/wl-admin/branded.html" class="wl-app-nav-link" data-wl-nav="branded">Branded pages</a>
+            <a href="/wl-admin/demo.html" class="wl-app-nav-link" data-wl-nav="demo">Demo Links</a>
+            <a href="/wl-admin/github.html" class="wl-app-nav-link" data-wl-nav="github">GitHub Repo</a>
+        </nav>
+
+        <div class="wl-page-head">
+            <h2 class="wl-page-title">GitHub Repo</h2>
+            <p class="wl-muted">Commits go to this repository. Amplify deploys the branch automatically (~2–5 min).</p>
+        </div>
+
+        <div class="wl-card">
+            <div class="wl-form-row">
+                <label for="wlRepoOwner">GitHub owner</label>
+                <input type="text" id="wlRepoOwner" placeholder="stasher-city" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlRepoName">Repository</label>
+                <input type="text" id="wlRepoName" placeholder="stasher-partner-signup" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlRepoBranch">Branch</label>
+                <input type="text" id="wlRepoBranch" placeholder="main" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="wl-form-row">
+                <label for="wlGithubToken">GitHub Personal Access Token <span class="wl-muted">(needs <code>contents:write</code>)</span></label>
+                <input type="password" id="wlGithubToken" placeholder="ghp_..." spellcheck="false" autocomplete="off">
+                <a class="wl-help-link" href="https://github.com/settings/tokens/new?description=Stasher%20Whitelabel%20Admin&scopes=repo" target="_blank" rel="noopener">How to create one →</a>
+            </div>
+            <div class="wl-form-actions">
+                <button type="button" id="wlSaveConfigBtn" class="wl-btn-primary">Save connection</button>
+                <span id="wlConfigStatus" class="wl-status"></span>
+            </div>
+        </div>
+    </main>
+
+    <script src="wl-admin/admin-common.js" defer></script>
+    <script src="wl-admin/admin-github.js" defer></script>
+</body>
+</html>
