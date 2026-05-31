@@ -1,5 +1,5 @@
 /*
- * WL Admin — shared gate, GitHub API, helpers, navigation.
+ * Partners Page Admin — shared gate, GitHub API, helpers, navigation.
  */
 (function (global) {
     'use strict';
