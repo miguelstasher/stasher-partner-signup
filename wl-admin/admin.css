@@ -400,15 +400,50 @@ html, body {
     margin-top: 6px;
 }
 
-.wl-saved-url-row input {
+.wl-saved-url-row input,
+.wl-share-url-input {
     flex: 1;
+    min-width: 0;
     padding: 8px 10px;
     font: inherit;
-    font-size: 14px;
+    font-size: 13px;
     border: 1px solid var(--wl-border);
     border-radius: 8px;
     background: #fff;
     color: var(--wl-text);
+}
+
+.wl-btn-compact {
+    padding: 8px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wl-url-preview {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(20, 46, 89, 0.04);
+    border: 1px solid var(--wl-border);
+    border-radius: 10px;
+}
+
+.wl-url-preview-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--wl-muted);
+    margin-bottom: 6px;
+}
+
+.wl-list-intro {
+    margin: 0 0 14px;
+    font-size: 13px;
 }
 
 /* ===== LIST / DASHBOARD ===== */
@@ -450,11 +485,31 @@ html, body {
 
 .wl-list-body { min-width: 0; }
 
+.wl-list-field-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--wl-muted);
+    margin: 0 0 4px;
+}
+
 .wl-list-code {
     font-weight: 700;
     font-size: 15px;
     letter-spacing: 0.02em;
-    margin: 0 0 4px;
+    margin: 0 0 10px;
+}
+
+.wl-list-code code {
+    font-size: 14px;
+    background: rgba(20, 46, 89, 0.07);
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.wl-list-share-row {
+    margin-bottom: 10px;
 }
 
 .wl-list-meta {
@@ -554,7 +609,7 @@ html, body {
 
 .wl-demo-table-head {
     display: grid;
-    grid-template-columns: 1.6fr 130px 2fr 148px;
+    grid-template-columns: 1.1fr 100px minmax(220px, 1.6fr) minmax(180px, 1.4fr) 168px;
     gap: 12px;
     padding: 9px 16px;
     background: rgba(20, 46, 89, 0.04);
@@ -568,7 +623,7 @@ html, body {
 
 .wl-demo-table-row {
     display: grid;
-    grid-template-columns: 1.6fr 130px 2fr 148px;
+    grid-template-columns: 1.1fr 100px minmax(220px, 1.6fr) minmax(180px, 1.4fr) 168px;
     gap: 12px;
     padding: 12px 16px;
     align-items: center;
@@ -610,9 +665,16 @@ html, body {
     word-break: break-all;
 }
 
+.wl-demo-col-signup {
+    min-width: 0;
+}
+
+.wl-demo-col-signup .wl-saved-url-row {
+    flex-wrap: wrap;
+}
+
 .wl-demo-col-url {
     min-width: 0;
-    overflow: hidden;
 }
 
 .wl-demo-live-link {
@@ -632,17 +694,31 @@ html, body {
     flex-wrap: wrap;
 }
 
+@media (max-width: 900px) {
+    .wl-demo-table-head { display: none; }
+    .wl-demo-table-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 14px;
+    }
+    .wl-demo-table-row > [data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--wl-muted);
+        margin-bottom: 4px;
+    }
+    .wl-demo-col-actions { justify-content: flex-start; }
+}
+
 @media (max-width: 640px) {
     .wl-app { padding: 20px 14px 60px; }
     .wl-card { padding: 16px; }
     .wl-list-item { grid-template-columns: 48px 1fr; }
     .wl-list-actions { grid-column: 1 / -1; align-items: stretch; }
     .wl-section-head { flex-direction: column; gap: 8px; }
-    .wl-demo-table-head { display: none; }
-    .wl-demo-table-row {
-        grid-template-columns: 1fr;
-        gap: 6px;
-        padding: 14px 14px;
-    }
-    .wl-demo-col-actions { justify-content: flex-start; }
+    .wl-saved-url-row { flex-direction: column; align-items: stretch; }
 }

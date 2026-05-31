@@ -103,6 +103,14 @@
                         <label for="wlPartnerCode">Parent ID code</label>
                         <input type="text" id="wlPartnerCode" placeholder="e.g. MARYSMITH or 2960514" pattern="[A-Za-z0-9_-]+" required spellcheck="false" autocomplete="off">
                         <small class="wl-muted">Letters, numbers, dashes, underscores. Becomes <code>?via=CODE</code>. Cannot be changed after creation.</small>
+                        <div id="wlPartnerUrlPreview" class="wl-url-preview" hidden>
+                            <label class="wl-url-preview-label">Signup URL</label>
+                            <div class="wl-saved-url-row">
+                                <input type="text" id="wlPartnerUrlPreviewInput" readonly aria-label="Signup URL preview">
+                                <button type="button" id="wlPartnerUrlPreviewCopy" class="wl-btn-secondary wl-btn-compact">Copy</button>
+                                <a id="wlPartnerUrlPreviewOpen" class="wl-btn-secondary wl-btn-compact" href="#" target="_blank" rel="noopener">Open</a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="wl-form-row">
@@ -178,6 +186,7 @@
                     <h3>Live branded pages</h3>
                     <button type="button" id="wlRefreshBtn" class="wl-link">Refresh</button>
                 </div>
+                <p class="wl-muted wl-list-intro">Each row shows the Parent ID and the full shareable signup URL (<code>https://partners.stasher.com/?via=…</code>).</p>
                 <div id="wlListContent" class="wl-list-content">
                     <p class="wl-muted">Loading…</p>
                 </div>
@@ -226,6 +235,14 @@
                         <label for="wlDemoParentId">Parent ID code</label>
                         <input type="text" id="wlDemoParentId" placeholder="e.g. 2960514 or MARYSMITH" pattern="[A-Za-z0-9_-]+" required spellcheck="false" autocomplete="off">
                         <small class="wl-muted">Must match the <code>?via=</code> value on the signup URL. Cannot be changed after creation.</small>
+                        <div id="wlDemoSignupUrlPreview" class="wl-url-preview" hidden>
+                            <label class="wl-url-preview-label">Signup URL</label>
+                            <div class="wl-saved-url-row">
+                                <input type="text" id="wlDemoSignupUrlPreviewInput" readonly aria-label="Signup URL preview">
+                                <button type="button" id="wlDemoSignupUrlPreviewCopy" class="wl-btn-secondary wl-btn-compact">Copy</button>
+                                <a id="wlDemoSignupUrlPreviewOpen" class="wl-btn-secondary wl-btn-compact" href="#" target="_blank" rel="noopener">Open</a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="wl-form-row">

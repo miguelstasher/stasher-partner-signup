@@ -67,6 +67,14 @@
     var $savedUrl = document.getElementById('wlSavedUrl');
     var $savedUrlInput = document.getElementById('wlSavedUrlInput');
     var $savedUrlCopy = document.getElementById('wlSavedUrlCopy');
+    var $partnerUrlPreview = document.getElementById('wlPartnerUrlPreview');
+    var $partnerUrlPreviewInput = document.getElementById('wlPartnerUrlPreviewInput');
+    var $partnerUrlPreviewCopy = document.getElementById('wlPartnerUrlPreviewCopy');
+    var $partnerUrlPreviewOpen = document.getElementById('wlPartnerUrlPreviewOpen');
+    var $demoSignupUrlPreview = document.getElementById('wlDemoSignupUrlPreview');
+    var $demoSignupUrlPreviewInput = document.getElementById('wlDemoSignupUrlPreviewInput');
+    var $demoSignupUrlPreviewCopy = document.getElementById('wlDemoSignupUrlPreviewCopy');
+    var $demoSignupUrlPreviewOpen = document.getElementById('wlDemoSignupUrlPreviewOpen');
 
     var $listCard = document.getElementById('wlListCard');
     var $listContent = document.getElementById('wlListContent');
@@ -252,6 +260,121 @@
         return String(input || '').trim().replace(/[^A-Za-z0-9_-]/g, '');
     }
 
+    function buildPartnerShareUrl(code) {
+        var id = sanitizeCode(code);
+        if (!id) return '';
+        return SHARE_BASE_URL + '?via=' + encodeURIComponent(id);
+    }
+
+    function copyToClipboard(text, btn, doneLabel) {
+        var original = btn ? btn.textContent : '';
+        var okLabel = doneLabel || 'Copied!';
+        function finish(ok) {
+            if (!btn) return;
+            btn.textContent = ok ? okLabel : 'Copy failed';
+            setTimeout(function () { btn.textContent = original; }, 1500);
+        }
+        if (!text) {
+            finish(false);
+            return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () { finish(true); }).catch(fallback);
+            return;
+        }
+        fallback();
+        function fallback() {
+            var temp = document.createElement('input');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            try {
+                finish(document.execCommand('copy'));
+            } catch (e) {
+                finish(false);
+            }
+            document.body.removeChild(temp);
+        }
+    }
+
+    function shareUrlFieldHtml(url) {
+        if (!url) {
+            return '<span class="wl-muted">—</span>';
+        }
+        return '' +
+            '<div class="wl-saved-url-row wl-list-share-row">' +
+                '<input type="text" class="wl-share-url-input" readonly value="' + escapeAttr(url) + '" aria-label="Signup URL">' +
+                '<button type="button" class="wl-btn-secondary wl-btn-compact" data-copy-url="' + escapeAttr(url) + '">Copy</button>' +
+                '<a class="wl-btn-secondary wl-btn-compact" href="' + escapeAttr(url) + '" target="_blank" rel="noopener">Open</a>' +
+            '</div>';
+    }
+
+    function bindCopyUrlButtons(root) {
+        if (!root) return;
+        Array.prototype.forEach.call(root.querySelectorAll('[data-copy-url]'), function (btn) {
+            btn.addEventListener('click', function () {
+                copyToClipboard(btn.getAttribute('data-copy-url') || '', btn);
+            });
+        });
+    }
+
+    function setUrlPreview($wrap, $input, $openLink, code) {
+        var url = buildPartnerShareUrl(code);
+        if (!$wrap || !$input) return;
+        if (!url) {
+            $wrap.hidden = true;
+            $input.value = '';
+            if ($openLink) {
+                $openLink.setAttribute('href', '#');
+                $openLink.hidden = true;
+            }
+            return;
+        }
+        $input.value = url;
+        $wrap.hidden = false;
+        if ($openLink) {
+            $openLink.href = url;
+            $openLink.hidden = false;
+        }
+    }
+
+    function updatePartnerUrlPreview() {
+        setUrlPreview($partnerUrlPreview, $partnerUrlPreviewInput, $partnerUrlPreviewOpen, $code.value);
+    }
+
+    function updateDemoSignupUrlPreview() {
+        setUrlPreview($demoSignupUrlPreview, $demoSignupUrlPreviewInput, $demoSignupUrlPreviewOpen, $demoParentId.value);
+    }
+
+    function hidePartnerUrlPreview() {
+        if ($partnerUrlPreview) $partnerUrlPreview.hidden = true;
+        if ($partnerUrlPreviewInput) $partnerUrlPreviewInput.value = '';
+    }
+
+    function hideDemoSignupUrlPreview() {
+        if ($demoSignupUrlPreview) $demoSignupUrlPreview.hidden = true;
+        if ($demoSignupUrlPreviewInput) $demoSignupUrlPreviewInput.value = '';
+    }
+
+    if ($code) {
+        $code.addEventListener('input', updatePartnerUrlPreview);
+        $code.addEventListener('change', updatePartnerUrlPreview);
+    }
+    if ($partnerUrlPreviewCopy) {
+        $partnerUrlPreviewCopy.addEventListener('click', function () {
+            copyToClipboard($partnerUrlPreviewInput.value, $partnerUrlPreviewCopy);
+        });
+    }
+    if ($demoParentId) {
+        $demoParentId.addEventListener('input', updateDemoSignupUrlPreview);
+        $demoParentId.addEventListener('change', updateDemoSignupUrlPreview);
+    }
+    if ($demoSignupUrlPreviewCopy) {
+        $demoSignupUrlPreviewCopy.addEventListener('click', function () {
+            copyToClipboard($demoSignupUrlPreviewInput.value, $demoSignupUrlPreviewCopy);
+        });
+    }
+
     function fileExtension(file) {
         if (file.type === 'image/png') return 'png';
         if (file.type === 'image/jpeg') return 'jpg';
@@ -358,9 +481,10 @@
                 });
             })
             .then(function () {
-                var url = SHARE_BASE_URL + '?via=' + encodeURIComponent(code);
+                var url = buildPartnerShareUrl(code);
                 $savedUrlInput.value = url;
                 $savedUrl.hidden = false;
+                setUrlPreview($partnerUrlPreview, $partnerUrlPreviewInput, $partnerUrlPreviewOpen, code);
                 setStatus($saveStatus, isEditing ? 'Updated. Live within a few minutes.' : 'Saved. Live within a few minutes.', 'success');
                 $saveBtn.disabled = false;
                 exitEditMode();
@@ -372,13 +496,8 @@
     }
 
     $savedUrlCopy.addEventListener('click', function () {
-        $savedUrlInput.select();
-        try {
-            document.execCommand('copy');
-            setStatus($saveStatus, 'URL copied to clipboard.', 'success');
-        } catch (e) {
-            setStatus($saveStatus, 'Could not copy. Select and copy manually.', 'error');
-        }
+        copyToClipboard($savedUrlInput.value, $savedUrlCopy);
+        setStatus($saveStatus, 'URL copied to clipboard.', 'success');
     });
 
     // ===================================================================
@@ -410,7 +529,10 @@
         $formTitle.textContent = 'Edit branded page: ' + code;
         $saveBtn.textContent = 'Update branded page';
         $cancelEditBtn.hidden = false;
-        $savedUrl.hidden = true;
+        var shareUrl = buildPartnerShareUrl(code);
+        $savedUrlInput.value = shareUrl;
+        $savedUrl.hidden = !shareUrl;
+        setUrlPreview($partnerUrlPreview, $partnerUrlPreviewInput, $partnerUrlPreviewOpen, code);
         setStatus($saveStatus, '', null);
         $formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -425,6 +547,7 @@
         $saveBtn.textContent = 'Save branded page';
         $cancelEditBtn.hidden = true;
         hideLogoPreview();
+        hidePartnerUrlPreview();
     }
 
     function showSavedLogoPreview(logoPath) {
@@ -477,6 +600,7 @@
         $form.reset();
         $colorPicker.value = '#142e59';
         $colorHex.value = '#142E59';
+        $savedUrl.hidden = true;
         setStatus($saveStatus, '', null);
     });
 
@@ -712,31 +836,33 @@
             var p = partners[code] || {};
             var logoSrc = p.logoPath || '';
             var color = p.brandColor || '#142e59';
-            var url = SHARE_BASE_URL + '?via=' + encodeURIComponent(code);
+            var url = buildPartnerShareUrl(code);
             return '' +
                 '<div class="wl-list-item">' +
                     '<div class="wl-list-logo">' +
                         (logoSrc ? '<img src="' + escapeAttr(logoSrc) + '" alt="' + escapeAttr(code) + ' logo">' : '') +
                     '</div>' +
                     '<div class="wl-list-body">' +
-                        '<p class="wl-list-code">' + escapeHtml(code) + '</p>' +
+                        '<p class="wl-list-field-label">Parent ID</p>' +
+                        '<p class="wl-list-code"><code>' + escapeHtml(code) + '</code></p>' +
+                        '<p class="wl-list-field-label">Signup URL</p>' +
+                        shareUrlFieldHtml(url) +
                         '<div class="wl-list-meta">' +
                             '<span class="wl-color-chip">' +
                                 '<span class="wl-color-chip-dot" style="background:' + escapeAttr(color) + '"></span>' +
                                 escapeHtml(color.toUpperCase()) +
                             '</span>' +
-                            '<a class="wl-list-link" href="' + escapeAttr(url) + '" target="_blank" rel="noopener">' + escapeHtml(url) + '</a>' +
                         '</div>' +
                     '</div>' +
                     '<div class="wl-list-actions">' +
                         '<a class="wl-link" href="' + escapeAttr(url) + '" target="_blank" rel="noopener">Preview</a>' +
                         '<button type="button" class="wl-link" data-edit="' + escapeAttr(code) + '">Edit</button>' +
                         '<button type="button" class="wl-link wl-link-danger" data-delete="' + escapeAttr(code) + '">Delete</button>' +
-                        '<button type="button" class="wl-link" data-copy="' + escapeAttr(url) + '">Copy link</button>' +
                     '</div>' +
                 '</div>';
         }).join('');
         $listContent.innerHTML = html;
+        bindCopyUrlButtons($listContent);
 
         Array.prototype.forEach.call($listContent.querySelectorAll('[data-edit]'), function (btn) {
             btn.addEventListener('click', function () {
@@ -746,18 +872,6 @@
         Array.prototype.forEach.call($listContent.querySelectorAll('[data-delete]'), function (btn) {
             btn.addEventListener('click', function () {
                 deletePartner(btn.getAttribute('data-delete'));
-            });
-        });
-        Array.prototype.forEach.call($listContent.querySelectorAll('[data-copy]'), function (btn) {
-            btn.addEventListener('click', function () {
-                var temp = document.createElement('input');
-                temp.value = btn.getAttribute('data-copy') || '';
-                document.body.appendChild(temp);
-                temp.select();
-                try { document.execCommand('copy'); } catch (e) {}
-                document.body.removeChild(temp);
-                btn.textContent = 'Copied!';
-                setTimeout(function () { btn.textContent = 'Copy link'; }, 1500);
             });
         });
     }
@@ -801,6 +915,7 @@
     $cancelDemoEditBtn.addEventListener('click', function () {
         exitDemoEditMode();
         $demoForm.reset();
+        hideDemoSignupUrlPreview();
         setStatus($demoSaveStatus, '', null);
     });
 
@@ -855,6 +970,7 @@
         $demoFormTitle.textContent = 'Edit demo call link';
         $demoSaveBtn.textContent = 'Update demo link';
         $cancelDemoEditBtn.hidden = false;
+        setUrlPreview($demoSignupUrlPreview, $demoSignupUrlPreviewInput, $demoSignupUrlPreviewOpen, parentId);
         setStatus($demoSaveStatus, '', null);
         $demoFormCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -866,6 +982,7 @@
         $demoFormTitle.textContent = 'Add demo call link';
         $demoSaveBtn.textContent = 'Save demo link';
         $cancelDemoEditBtn.hidden = true;
+        hideDemoSignupUrlPreview();
     }
 
     function deleteDemoLink(parentId) {
@@ -975,23 +1092,27 @@
         var rows = ids.map(function (id) {
             var link = links[id] || {};
             var calUrl = link.calUrl || '';
+            var signupUrl = buildPartnerShareUrl(id);
             return '' +
                 '<div class="wl-demo-table-row">' +
-                    '<div class="wl-demo-col-name">' +
+                    '<div class="wl-demo-col-name" data-label="Name">' +
                         '<span class="wl-live-badge">Live</span>' +
                         '<span class="wl-demo-name-text">' + escapeHtml(link.name || id) + '</span>' +
                     '</div>' +
-                    '<div class="wl-demo-col-pid"><code>' + escapeHtml(id) + '</code></div>' +
-                    '<div class="wl-demo-col-url">' +
+                    '<div class="wl-demo-col-pid" data-label="Parent ID"><code>' + escapeHtml(id) + '</code></div>' +
+                    '<div class="wl-demo-col-signup" data-label="Signup URL">' +
+                        shareUrlFieldHtml(signupUrl) +
+                    '</div>' +
+                    '<div class="wl-demo-col-url" data-label="Cal.com">' +
                         (calUrl
                             ? '<a class="wl-demo-live-link" href="' + escapeAttr(calUrl) + '" target="_blank" rel="noopener">' + escapeHtml(calUrl) + '</a>'
                             : '<span class="wl-muted">—</span>') +
                     '</div>' +
                     '<div class="wl-demo-col-actions">' +
-                        (calUrl ? '<a class="wl-link" href="' + escapeAttr(calUrl) + '" target="_blank" rel="noopener">Open</a>' : '') +
+                        (calUrl ? '<a class="wl-link" href="' + escapeAttr(calUrl) + '" target="_blank" rel="noopener">Open Cal</a>' : '') +
                         '<button type="button" class="wl-link" data-demo-edit="' + escapeAttr(id) + '">Edit</button>' +
                         '<button type="button" class="wl-link wl-link-danger" data-demo-delete="' + escapeAttr(id) + '">Delete</button>' +
-                        '<button type="button" class="wl-link" data-demo-copy="' + escapeAttr(calUrl) + '">Copy</button>' +
+                        (calUrl ? '<button type="button" class="wl-link" data-copy-url="' + escapeAttr(calUrl) + '">Copy Cal</button>' : '') +
                     '</div>' +
                 '</div>';
         }).join('');
@@ -1001,11 +1122,14 @@
                 '<div class="wl-demo-table-head">' +
                     '<div>Name</div>' +
                     '<div>Parent ID</div>' +
-                    '<div>Cal.com Link</div>' +
+                    '<div>Signup URL</div>' +
+                    '<div>Cal.com link</div>' +
                     '<div></div>' +
                 '</div>' +
                 rows +
             '</div>';
+
+        bindCopyUrlButtons($demoListContent);
 
         Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-edit]'), function (btn) {
             btn.addEventListener('click', function () {
@@ -1015,18 +1139,6 @@
         Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-delete]'), function (btn) {
             btn.addEventListener('click', function () {
                 deleteDemoLink(btn.getAttribute('data-demo-delete'));
-            });
-        });
-        Array.prototype.forEach.call($demoListContent.querySelectorAll('[data-demo-copy]'), function (btn) {
-            btn.addEventListener('click', function () {
-                var temp = document.createElement('input');
-                temp.value = btn.getAttribute('data-demo-copy') || '';
-                document.body.appendChild(temp);
-                temp.select();
-                try { document.execCommand('copy'); } catch (e) {}
-                document.body.removeChild(temp);
-                btn.textContent = 'Copied!';
-                setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
             });
         });
     }
