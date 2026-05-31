@@ -454,36 +454,121 @@ function buildTapfiliatePayload(affiliateData) {
     return payload;
 }
 
-// AWS Lambda handler function
-exports.handler = async (event) => {
-    // Only allow POST requests
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
+// ===================================================================
+// AFFILIATE DASHBOARD – GET handler
+// ===================================================================
+const AFFILIATE_CORS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Content-Type': 'application/json'
+};
+
+async function tapGet(path, apiKey) {
+    const resp = await fetch(`${TAPFILIATE_BASE_URL}${path}`, {
+        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' }
+    });
+    if (resp.status === 404) return null;
+    const data = await resp.json();
+    if (!resp.ok) throw new Error((data && data.message) || `Tapfiliate ${resp.status}`);
+    return data;
+}
+
+async function handleAffiliateDashboard(event) {
+    const apiKey = process.env.TAPFILIATE_API_KEY;
+    if (!apiKey) {
+        return { statusCode: 500, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'API key not configured' }) };
     }
 
-    // CORS headers
+    const params = event.queryStringParameters || {};
+    const action = (params.action || '').trim();
+
+    try {
+        // --- LOGIN: look up affiliate by email ---
+        if (action === 'login') {
+            const email = (params.email || '').trim();
+            if (!email) return { statusCode: 400, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'email is required' }) };
+
+            const list = await tapGet(`affiliates/?email=${encodeURIComponent(email)}`, apiKey);
+            if (!list || !Array.isArray(list) || list.length === 0) {
+                return { statusCode: 404, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'No affiliate account found with this email.' }) };
+            }
+            const match = list.find(a => (a.email || '').toLowerCase() === email.toLowerCase()) || list[0];
+
+            // Fetch full profile (includes referral_url and coupon_codes)
+            const profile = await tapGet(`affiliates/${encodeURIComponent(match.id)}/`, apiKey) || match;
+
+            return {
+                statusCode: 200,
+                headers: AFFILIATE_CORS,
+                body: JSON.stringify({
+                    success: true,
+                    affiliate: {
+                        id: profile.id,
+                        firstname: profile.firstname || '',
+                        lastname: profile.lastname || '',
+                        email: profile.email || email,
+                        referral_url: profile.referral_url || '',
+                        coupon_codes: profile.coupon_codes || []
+                    }
+                })
+            };
+        }
+
+        // --- DASHBOARD: conversions + commissions for an affiliate ---
+        if (action === 'dashboard') {
+            const affiliateId = (params.affiliate_id || '').trim();
+            if (!affiliateId) return { statusCode: 400, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'affiliate_id is required' }) };
+
+            const [conversions, commissions] = await Promise.all([
+                tapGet(`conversions/?affiliate_id=${encodeURIComponent(affiliateId)}&per-page=100`, apiKey),
+                tapGet(`commissions/?affiliate_id=${encodeURIComponent(affiliateId)}&per-page=100`, apiKey)
+            ]);
+
+            return {
+                statusCode: 200,
+                headers: AFFILIATE_CORS,
+                body: JSON.stringify({
+                    conversions: Array.isArray(conversions) ? conversions : [],
+                    commissions: Array.isArray(commissions) ? commissions : []
+                })
+            };
+        }
+
+        return { statusCode: 400, headers: AFFILIATE_CORS, body: JSON.stringify({ error: 'Unknown action. Use ?action=login or ?action=dashboard' }) };
+
+    } catch (err) {
+        console.error('[AffiliateDashboard] error:', err.message);
+        return { statusCode: 500, headers: AFFILIATE_CORS, body: JSON.stringify({ error: err.message }) };
+    }
+}
+
+// AWS Lambda handler function
+exports.handler = async (event) => {
+    // CORS preflight
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 200, headers: AFFILIATE_CORS, body: '' };
+    }
+
+    // Affiliate dashboard GET endpoints
+    if (event.httpMethod === 'GET') {
+        return handleAffiliateDashboard(event);
+    }
+
+    // CORS headers for POST responses
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Content-Type': 'application/json'
     };
 
-    // Handle preflight OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
+    // Only allow POST for create-affiliate operations
+    if (event.httpMethod !== 'POST') {
         return {
-            statusCode: 200,
+            statusCode: 405,
             headers,
-            body: ''
+            body: JSON.stringify({ error: 'Method not allowed' })
         };
     }
 

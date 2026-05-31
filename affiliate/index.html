@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Stasher Partner Portal</title>
+    <base href="/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="affiliate/affiliate.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="afLogin" class="af-login">
+    <div class="af-login-card">
+        <img src="STASHER PARTNERS LOGO.png" alt="Stasher Partners" class="af-login-logo">
+        <h1 class="af-login-title">Partner Portal</h1>
+        <p class="af-login-sub">Enter your registered email address to access your dashboard.</p>
+        <form id="afLoginForm" novalidate>
+            <div class="af-field">
+                <label for="afEmail">Email address</label>
+                <input type="email" id="afEmail" placeholder="you@example.com" required autocomplete="email">
+            </div>
+            <button type="submit" id="afLoginBtn" class="af-btn-primary af-btn-full">Access Dashboard</button>
+            <p id="afLoginErr" class="af-login-err" hidden></p>
+        </form>
+        <p class="af-login-help">Not registered yet? <a href="/" target="_blank" rel="noopener">Sign up here →</a></p>
+    </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="afApp" class="af-app" hidden>
+
+    <!-- Sidebar -->
+    <aside class="af-sidebar">
+        <div class="af-sidebar-logo">
+            <img src="white - horizontal.png" alt="Stasher" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <span class="af-sidebar-logo-text" style="display:none">Stasher Partners</span>
+        </div>
+
+        <nav class="af-nav">
+            <a href="#" class="af-nav-link" data-page="home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Home
+            </a>
+
+            <span class="af-nav-label">Management</span>
+            <a href="#" class="af-nav-link" data-page="earnings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Earnings
+            </a>
+
+            <span class="af-nav-label">Resources</span>
+            <a href="#" class="af-nav-link" data-page="resources">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Marketing Kit
+            </a>
+
+            <span class="af-nav-label">Support</span>
+            <a href="mailto:partnerships@stasher.com" class="af-nav-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Chat with support
+            </a>
+            <a href="https://stasher.com/faq" target="_blank" rel="noopener" class="af-nav-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Knowledge base
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="af-nav-ext"><polyline points="7 17 17 7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+        </nav>
+
+        <button id="afLogoutBtn" class="af-sidebar-logout">Log out</button>
+    </aside>
+
+    <!-- Main -->
+    <div class="af-main">
+        <header class="af-topbar">
+            <h1 id="afPageTitle" class="af-topbar-title">Home</h1>
+            <div class="af-topbar-right">
+                <div id="afAvatar" class="af-avatar"></div>
+            </div>
+        </header>
+
+        <div class="af-content">
+
+            <!-- ============ HOME PAGE ============ -->
+            <div id="afPageHome" class="af-page">
+                <h2 id="afWelcome" class="af-welcome">Hi there!</h2>
+
+                <!-- Stats row -->
+                <div class="af-stats-row" id="afStatsRow">
+                    <div class="af-stat-card">
+                        <span class="af-stat-label">Total Bookings</span>
+                        <span class="af-stat-value" id="afStatBookings">
+                            <span class="af-skeleton">···</span>
+                        </span>
+                    </div>
+                    <div class="af-stat-card">
+                        <span class="af-stat-label">Revenue Generated</span>
+                        <span class="af-stat-value" id="afStatRevenue">
+                            <span class="af-skeleton">···</span>
+                        </span>
+                    </div>
+                    <div class="af-stat-card">
+                        <span class="af-stat-label">Commission Earned</span>
+                        <span class="af-stat-value" id="afStatEarned">
+                            <span class="af-skeleton">···</span>
+                        </span>
+                    </div>
+                    <div class="af-stat-card">
+                        <span class="af-stat-label">Pending Balance</span>
+                        <span class="af-stat-value" id="afStatPending">
+                            <span class="af-skeleton">···</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Promo cards -->
+                <div class="af-promo-grid">
+                    <div class="af-promo-card">
+                        <div class="af-promo-icon">🚀</div>
+                        <div>
+                            <strong>Maximise your earnings as a Stasher Partner</strong>
+                            <p>Discover top strategies to drive bookings, earn commissions, and help travellers enjoy a lighter journey.</p>
+                            <a href="#" class="af-text-link" data-page="resources">Get your guide →</a>
+                        </div>
+                    </div>
+                    <div class="af-promo-card">
+                        <div class="af-promo-icon">📦</div>
+                        <div>
+                            <strong>Download Stasher marketing assets</strong>
+                            <p>Access logos, banners, and promotional materials to market Stasher to your customers and increase your commissions.</p>
+                            <a href="#" class="af-text-link" data-page="resources">Download assets →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Affiliate link -->
+                <div class="af-link-card">
+                    <h3>Your Affiliate Link</h3>
+                    <p class="af-muted">Share this link with your audience. Every booking made through it earns you a commission.</p>
+                    <div class="af-copy-row">
+                        <input type="text" id="afReferralLink" readonly class="af-copy-input">
+                        <button class="af-copy-btn" data-copy="afReferralLink">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Recruitment link -->
+                <div class="af-link-card">
+                    <h3>Recruitment Link</h3>
+                    <p class="af-muted">Invite other businesses and partners to join the Stasher affiliate programme. You earn a bonus for every active referral.</p>
+                    <div class="af-copy-row">
+                        <input type="text" id="afRecruitLink" readonly class="af-copy-input">
+                        <button class="af-copy-btn" data-copy="afRecruitLink">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Coupon codes -->
+                <div id="afCouponCard" class="af-link-card" hidden>
+                    <h3>Your Coupon Code(s)</h3>
+                    <p class="af-muted">Share these codes with your audience for discounts on Stasher bookings.</p>
+                    <div id="afCouponList" class="af-coupon-list"></div>
+                </div>
+            </div>
+
+            <!-- ============ EARNINGS PAGE ============ -->
+            <div id="afPageEarnings" class="af-page" hidden>
+
+                <!-- Tabs -->
+                <div class="af-tabs">
+                    <button class="af-tab-btn af-tab-active" data-tab="overview">Overview</button>
+                    <button class="af-tab-btn" data-tab="details">Earning details</button>
+                    <button class="af-tab-btn" data-tab="payouts">Payout details</button>
+                </div>
+
+                <!-- Tab: Overview -->
+                <div id="afTabOverview" class="af-tab-pane">
+                    <div class="af-stats-row">
+                        <div class="af-stat-card">
+                            <span class="af-stat-label">Total Bookings</span>
+                            <span class="af-stat-value" id="afEStatBookings"><span class="af-skeleton">···</span></span>
+                        </div>
+                        <div class="af-stat-card">
+                            <span class="af-stat-label">Revenue Generated</span>
+                            <span class="af-stat-value" id="afEStatRevenue"><span class="af-skeleton">···</span></span>
+                        </div>
+                        <div class="af-stat-card">
+                            <span class="af-stat-label">Total Commission</span>
+                            <span class="af-stat-value" id="afEStatTotal"><span class="af-skeleton">···</span></span>
+                        </div>
+                        <div class="af-stat-card">
+                            <span class="af-stat-label">Pending Balance</span>
+                            <span class="af-stat-value" id="afEStatPending"><span class="af-skeleton">···</span></span>
+                        </div>
+                    </div>
+
+                    <div id="afLastPaymentCard" class="af-info-banner" hidden>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        <span id="afLastPaymentText"></span>
+                    </div>
+
+                    <div class="af-payout-note">
+                        <p>Commissions are paid monthly. The minimum payout threshold is <strong>£10 / €10 / $10</strong>. If the threshold isn't met, the balance rolls over to the next month.</p>
+                        <p>To receive payments, make sure your payout method is set up in your <a href="https://tapfiliate.com/a/login/" target="_blank" rel="noopener">Tapfiliate dashboard</a>.</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Earning details -->
+                <div id="afTabDetails" class="af-tab-pane" hidden>
+                    <div class="af-table-wrap">
+                        <table class="af-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Booking value</th>
+                                    <th>Commission</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="afConvBody">
+                                <tr><td colspan="4" class="af-table-loading">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab: Payout details -->
+                <div id="afTabPayouts" class="af-tab-pane" hidden>
+                    <div id="afPayoutSetupBanner" class="af-alert af-alert-warn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        You haven't set up a payout method yet.
+                        <a href="https://tapfiliate.com/a/login/" target="_blank" rel="noopener">Set up in Tapfiliate →</a>
+                    </div>
+                    <div class="af-table-wrap">
+                        <table class="af-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Commission amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="afCommBody">
+                                <tr><td colspan="3" class="af-table-loading">Loading…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ RESOURCES PAGE ============ -->
+            <div id="afPageResources" class="af-page" hidden>
+                <h2 class="af-welcome">Marketing Kit &amp; Best Practices</h2>
+
+                <!-- Downloads -->
+                <h3 class="af-section-heading">Downloads</h3>
+                <div class="af-resource-grid">
+                    <div class="af-resource-card">
+                        <div class="af-resource-icon">🖼</div>
+                        <h4>Stasher Partner Logo</h4>
+                        <p>Official logo for use in your website, emails, and marketing materials.</p>
+                        <a href="STASHER PARTNERS LOGO.png" download class="af-btn-secondary">Download logo</a>
+                    </div>
+                    <div class="af-resource-card">
+                        <div class="af-resource-icon">📄</div>
+                        <h4>Partnership FAQs</h4>
+                        <p>Answers to the most common questions from partners and their customers.</p>
+                        <a href="Faqs partnernships page.pdf" download class="af-btn-secondary">Download PDF</a>
+                    </div>
+                    <div class="af-resource-card">
+                        <div class="af-resource-icon">📋</div>
+                        <h4>Partner Agreement</h4>
+                        <p>Full terms and conditions of the Stasher Partnership Network Agreement.</p>
+                        <a href="PARTNERSHIP NETWORK AGREEMENT – TERMS AND CONDITIONS (1).pdf" download class="af-btn-secondary">Download PDF</a>
+                    </div>
+                    <div class="af-resource-card">
+                        <div class="af-resource-icon">🌐</div>
+                        <h4>Stasher Partner Page</h4>
+                        <p>Your live branded partner page — share it with your audience.</p>
+                        <a href="#" id="afPartnerPageLink" class="af-btn-secondary" target="_blank" rel="noopener">Open page</a>
+                    </div>
+                </div>
+
+                <!-- Best Practices -->
+                <h3 class="af-section-heading" style="margin-top:32px">Best practices — how to use Stasher</h3>
+                <div class="af-practices-grid">
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">01</div>
+                        <h4>Add your affiliate link everywhere</h4>
+                        <p>Include your referral link in your website, email newsletters, booking confirmation emails, and social media bio. The more touchpoints, the more bookings.</p>
+                    </div>
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">02</div>
+                        <h4>Target high-intent moments</h4>
+                        <p>The best time to promote Stasher is when travellers are planning their trip — in booking confirmations, check-in emails, or "things to do" guides. Offer storage as a convenience.</p>
+                    </div>
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">03</div>
+                        <h4>Highlight the customer benefit</h4>
+                        <p>Focus on what matters to your audience: secure, insured luggage storage from just £1/hour, available at thousands of locations worldwide. No queues, no hassle.</p>
+                    </div>
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">04</div>
+                        <h4>Use your coupon code</h4>
+                        <p>If you have a coupon code, promote it actively. Discounts drive conversions. Include it in every communication and make it clear it's exclusive to your audience.</p>
+                    </div>
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">05</div>
+                        <h4>Add Stasher to your confirmation emails</h4>
+                        <p>When guests confirm a booking or accommodation with you, add a short line: "Need somewhere to store your bags? Our partner Stasher has you covered — <em>your link here</em>."</p>
+                    </div>
+                    <div class="af-practice-card">
+                        <div class="af-practice-num">06</div>
+                        <h4>Grow your network</h4>
+                        <p>Share your recruitment link with other businesses in hospitality, travel, or tourism. Every new active affiliate you bring in adds to your earning potential.</p>
+                    </div>
+                </div>
+
+                <!-- Payout info -->
+                <div class="af-info-banner" style="margin-top:32px">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Commission is paid monthly. Minimum threshold: £10 / €10 / $10. Set up your payout method in <a href="https://tapfiliate.com/a/login/" target="_blank" rel="noopener">Tapfiliate</a>.</span>
+                </div>
+            </div>
+
+        </div><!-- /af-content -->
+    </div><!-- /af-main -->
+</div><!-- /af-app -->
+
+<script src="affiliate/affiliate.js" defer></script>
+</body>
+</html>
