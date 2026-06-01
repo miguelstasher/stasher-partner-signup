@@ -408,61 +408,33 @@ function buildBenefitsCta(url, label) {
 }
 
 /**
- * Parse the admin-supplied description into a title + checklist items.
- * Rules:
- *   - Lines starting with •, -, * or + are treated as bullet items.
- *   - If any bullets exist, lines before the first bullet form the title;
- *     non-bullet lines after a bullet are appended to the previous item.
- *   - If no bullets exist, the first line is the title and the rest is a
- *     plain paragraph (preserving line breaks).
- *
- * When `titleAlreadyProvided` is true, no title is extracted from the
- * description — every non-bullet line is treated as either a paragraph
- * (no bullets present) or appended to the most recent item (bullets present).
+ * Parse the admin description into checklist items (one per line).
+ * Strips leading bullets/numbers; title comes from the separate title field.
  */
 function parseBenefits(description, titleAlreadyProvided) {
     const result = { title: '', items: [], paragraph: '' };
     if (!description) return result;
 
-    const lines = String(description).split(/\r?\n/).map(function (l) {
-        return l.trim();
-    }).filter(Boolean);
+    const stripPrefix = function (line) {
+        return String(line || '')
+            .replace(/^\s*[•\u2022\u00b7\-*+]\s*/, '')
+            .replace(/^\s*\d+[.)]\s*/, '')
+            .trim();
+    };
+
+    const lines = String(description).split(/\r?\n/).map(stripPrefix).filter(Boolean);
     if (lines.length === 0) return result;
 
-    const bulletRegex = /^[•\-*+]\s+/;
-    const isBullet = function (line) { return bulletRegex.test(line); };
-    const stripBullet = function (line) { return line.replace(bulletRegex, '').trim(); };
-
-    const hasBullets = lines.some(isBullet);
-
-    if (!hasBullets) {
-        if (titleAlreadyProvided) {
-            result.paragraph = lines.join('\n');
-        } else if (lines.length === 1) {
-            result.title = lines[0];
-        } else {
-            result.title = lines[0];
-            result.paragraph = lines.slice(1).join('\n');
-        }
+    if (titleAlreadyProvided) {
+        result.items = lines;
         return result;
     }
 
-    let collectingTitle = !titleAlreadyProvided;
-    const titleLines = [];
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (isBullet(line)) {
-            collectingTitle = false;
-            const cleaned = stripBullet(line);
-            if (cleaned) result.items.push(cleaned);
-        } else if (collectingTitle) {
-            titleLines.push(line);
-        } else if (result.items.length > 0) {
-            result.items[result.items.length - 1] += ' ' + line;
-        }
-    }
-    if (!titleAlreadyProvided) {
-        result.title = titleLines.join(' ');
+    if (lines.length === 1) {
+        result.title = lines[0];
+    } else {
+        result.title = lines[0];
+        result.items = lines.slice(1);
     }
     return result;
 }
