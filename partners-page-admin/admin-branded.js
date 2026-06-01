@@ -33,9 +33,22 @@
     var $partnerUrlPreviewInput = document.getElementById('wlPartnerUrlPreviewInput');
     var $partnerUrlPreviewCopy = document.getElementById('wlPartnerUrlPreviewCopy');
     var $partnerUrlPreviewOpen = document.getElementById('wlPartnerUrlPreviewOpen');
+    var $stasherLogoWhite = document.getElementById('wlStasherLogoWhite');
+    var $stasherLogoBlue = document.getElementById('wlStasherLogoBlue');
     var $listCard = document.getElementById('wlListCard');
     var $listContent = document.getElementById('wlListContent');
     var $refreshBtn = document.getElementById('wlRefreshBtn');
+
+    function getStasherLogoColor() {
+        if ($stasherLogoBlue && $stasherLogoBlue.checked) return 'blue';
+        return 'white';
+    }
+
+    function setStasherLogoColor(value) {
+        var useBlue = String(value || '').toLowerCase() === 'blue';
+        if ($stasherLogoBlue) $stasherLogoBlue.checked = useBlue;
+        if ($stasherLogoWhite) $stasherLogoWhite.checked = !useBlue;
+    }
 
     function togglePageVisibility() {
         var has = WL.hasGithubConfig();
@@ -114,6 +127,7 @@
             var p = partners[code] || {};
             var logoSrc = p.logoPath || '';
             var color = p.brandColor || '#142e59';
+            var stasherLogo = (p.stasherLogoColor === 'blue') ? 'Blue' : 'White';
             var url = WL.buildPartnerShareUrl(code);
             return '' +
                 '<div class="wl-list-item">' +
@@ -130,6 +144,7 @@
                                 '<span class="wl-color-chip-dot" style="background:' + WL.escapeAttr(color) + '"></span>' +
                                 WL.escapeHtml(color.toUpperCase()) +
                             '</span>' +
+                            '<span class="wl-muted">Stasher logo: ' + WL.escapeHtml(stasherLogo) + '</span>' +
                         '</div>' +
                     '</div>' +
                     '<div class="wl-list-actions">' +
@@ -258,6 +273,7 @@
                     description: description,
                     ctaUrl: ($ctaUrl.value || '').trim(),
                     ctaLabel: ($ctaLabel.value || '').trim(),
+                    stasherLogoColor: getStasherLogoColor(),
                     logoPath: '/' + finalLogoPath,
                     updatedAt: new Date().toISOString()
                 });
@@ -273,6 +289,7 @@
                 $form.reset();
                 $colorPicker.value = '#142e59';
                 $colorHex.value = '#142E59';
+                setStasherLogoColor('white');
                 refreshBranded();
             });
     }
@@ -295,6 +312,7 @@
         $colorHex.value = (partner.brandColor || '#142e59').toUpperCase();
         $ctaUrl.value = partner.ctaUrl || '';
         $ctaLabel.value = partner.ctaLabel || '';
+        setStasherLogoColor(partner.stasherLogoColor || 'white');
         $logo.value = '';
         $logo.required = false;
         $logoEditHint.hidden = false;
@@ -321,6 +339,7 @@
         $cancelEditBtn.hidden = true;
         hideLogoPreview();
         hidePartnerUrlPreview();
+        setStasherLogoColor('white');
     }
 
     function showSavedLogoPreview(logoPath) {

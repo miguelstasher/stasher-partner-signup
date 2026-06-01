@@ -163,6 +163,10 @@ if (document.readyState === 'loading') {
 // If there is no ?via=, or the code is unknown, the page is left untouched.
 
 const WHITELABEL_PARTNERS_URL = '/whitelabel/partners.json';
+const STASHER_LOGO_PATHS = {
+    white: 'white - horizontal.png',
+    blue: 'assets/stasher-logo-blue-horizontal.png'
+};
 
 function getViaCodeFromURL() {
     try {
@@ -190,6 +194,7 @@ function applyWhitelabelBranding(partner) {
         if (partner.brandColor && /^#[0-9a-fA-F]{6}$/.test(partner.brandColor)) {
             injectWhitelabelBrandStyles(partner.brandColor);
         }
+        applyStasherLogoColor(partner.stasherLogoColor);
         if (partner.logoPath) {
             replacePerfectForWithLogo(partner.logoPath, partner.code || 'Partner');
         }
@@ -205,6 +210,16 @@ function applyWhitelabelBranding(partner) {
     } catch (error) {
         console.warn('[Whitelabel] Could not apply branding:', error);
     }
+}
+
+function applyStasherLogoColor(choice) {
+    var key = (String(choice || '').toLowerCase() === 'blue') ? 'blue' : 'white';
+    var src = STASHER_LOGO_PATHS[key];
+    if (!src) return;
+    var headerLogo = document.getElementById('logo');
+    var footerLogo = document.querySelector('.footer-logo');
+    if (headerLogo) headerLogo.src = src;
+    if (footerLogo) footerLogo.src = src;
 }
 
 /**

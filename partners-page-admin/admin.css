@@ -379,6 +379,77 @@ html, body {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+.wl-form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--wl-text);
+}
+
+.wl-stasher-logo-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.wl-stasher-logo-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 132px;
+    padding: 12px;
+    border: 2px solid var(--wl-border);
+    border-radius: 12px;
+    cursor: pointer;
+    background: #fff;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.wl-stasher-logo-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wl-stasher-logo-option:has(input:checked) {
+    border-color: var(--wl-accent);
+    box-shadow: 0 0 0 1px var(--wl-accent);
+}
+
+.wl-stasher-logo-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+.wl-stasher-logo-preview--dark {
+    background: #142e59;
+}
+
+.wl-stasher-logo-preview--light {
+    background: #f2f8fe;
+    border: 1px solid var(--wl-border);
+}
+
+.wl-stasher-logo-preview img {
+    max-width: 100%;
+    max-height: 28px;
+    object-fit: contain;
+}
+
+.wl-stasher-logo-option-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--wl-text);
+}
+
 .wl-form-actions {
     display: flex;
     align-items: center;
