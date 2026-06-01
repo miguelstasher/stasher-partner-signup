@@ -180,28 +180,49 @@ function getCountryISOCode(countryName) {
 }
 
 /**
- * Validate and normalize parent_id for Tapfiliate MLM parent endpoint
- * Returns null if invalid, otherwise returns the validated numeric string
+ * Validate and normalize parent_id for Tapfiliate MLM parent endpoint.
+ * Returns null if invalid, otherwise the validated referral identifier.
+ *
+ * IMPORTANT: a Tapfiliate referral link (?via=CODE) can carry EITHER form of
+ * parent id and both are valid for the Set-parent endpoint:
+ *   - a numeric id      e.g. "123456"      -> sent as `via`
+ *   - a letter/handle id e.g. "janejameson" -> sent as `affiliate_id`
+ * Previously this only accepted digits, so letter/handle referral codes were
+ * silently dropped and the parent was never tracked. We now accept both.
  */
 function validateParentId(rawParentId) {
     if (!rawParentId) {
         return null;
     }
-    
+
     // Convert to string and trim
     const parentId = typeof rawParentId === 'string' ? rawParentId.trim() : String(rawParentId || '').trim();
-    
-    // Check if empty or the string "null"
-    if (parentId === '' || parentId === 'null') {
+
+    // Reject empty / sentinel values
+    const lower = parentId.toLowerCase();
+    if (parentId === '' || lower === 'null' || lower === 'undefined') {
         return null;
     }
-    
-    // Must be a numeric string (digits only)
-    if (!/^[0-9]+$/.test(parentId)) {
+
+    // Accept Tapfiliate referral identifiers: numeric ids OR letter/handle ids.
+    // Allowed chars cover Tapfiliate's referral-code format (letters, digits,
+    // and the separators . _ -). Anything else is treated as invalid.
+    if (!/^[A-Za-z0-9._-]+$/.test(parentId)) {
         return null;
     }
-    
+
     return parentId;
+}
+
+/**
+ * Build the Set-parent request body for the field that matches the id format.
+ * Tapfiliate expects the parent's NUMERIC id under `via` and the parent's
+ * LETTER/handle id under `affiliate_id`.
+ */
+function buildParentRequestBody(parentId) {
+    return /^[0-9]+$/.test(parentId)
+        ? { via: parentId }
+        : { affiliate_id: parentId };
 }
 
 const COMPANY_TYPE_LABELS = {
@@ -341,27 +362,44 @@ async function setAffiliateWebsiteMeta(affiliateId, website, apiKey, logPrefix) 
 
 async function setAffiliateParent(affiliateId, parentId, apiKey, logPrefix) {
     if (!parentId) {
-        return;
+        return false;
     }
+
+    // The Set-parent endpoint accepts the parent's numeric id as `via` OR the
+    // parent's letter/handle id as `affiliate_id`. We can't always know which
+    // form a referral code is, so try the best-guess field first and fall back
+    // to the other one — this guarantees the parent is tracked whenever the id
+    // is valid, instead of silently failing on a field mismatch.
+    const primaryBody = buildParentRequestBody(parentId);
+    const primaryField = Object.keys(primaryBody)[0];
+    const fallbackField = primaryField === 'via' ? 'affiliate_id' : 'via';
+    const attempts = [primaryBody, { [fallbackField]: parentId }];
 
     try {
         console.log(`${logPrefix} Setting parent via Tapfiliate MLM endpoint:`, parentId);
-        const response = await fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliateId}/parent/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
-            body: JSON.stringify({ via: parentId })
-        });
 
-        if (!response.ok) {
+        for (const body of attempts) {
+            const field = Object.keys(body)[0];
+            const response = await fetch(`${TAPFILIATE_BASE_URL}affiliates/${affiliateId}/parent/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                console.log(`${logPrefix} Parent affiliate set successfully (field: ${field})`);
+                return true;
+            }
+
             const errorText = await response.text();
             const trimmedError = errorText.length > 1000 ? errorText.substring(0, 1000) + '...' : errorText;
-            console.error(`${logPrefix} Failed to set parent:`, response.status, trimmedError);
-        } else {
-            console.log(`${logPrefix} Parent affiliate set successfully`);
+            console.error(`${logPrefix} Failed to set parent (field: ${field}):`, response.status, trimmedError);
         }
     } catch (error) {
         console.error(`${logPrefix} Failed to set parent:`, error);
     }
+
+    return false;
 }
 
 async function findAffiliateIdByEmail(email, apiKey, logPrefix) {
@@ -729,37 +767,13 @@ exports.handler = async (event) => {
 
             console.log('[Stage A] Affiliate created with ID:', affiliateStageA.id);
 
-            // Set parent affiliate if provided (for MLM functionality)
+            // Set parent affiliate if provided (for MLM functionality).
+            // Uses the shared helper so the via/affiliate_id field selection and
+            // fallback logic stay consistent with the other stages.
             const parentIdStageA = validateParentId(affiliateData.parent_id);
             if (parentIdStageA) {
-                try {
-                    console.log('[Parent] Setting parent via Tapfiliate MLM endpoint:', parentIdStageA);
-                    const setParentResponse = await fetch(
-                        `${TAPFILIATE_BASE_URL}affiliates/${affiliateStageA.id}/parent/`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-Api-Key': TAPFILIATE_API_KEY
-                            },
-                            body: JSON.stringify({
-                                via: parentIdStageA
-                            })
-                        }
-                    );
-
-                    if (!setParentResponse.ok) {
-                        const parentErrorText = await setParentResponse.text();
-                        const trimmedParentError = parentErrorText.length > 1000 ? parentErrorText.substring(0, 1000) + '...' : parentErrorText;
-                        console.error('[Parent] Failed to set parent:', setParentResponse.status, trimmedParentError);
-                        // Continue anyway - affiliate was created successfully
-                    } else {
-                        console.log('[Stage A] ✅ Parent affiliate set successfully');
-                    }
-                } catch (parentError) {
-                    console.error('[Parent] Failed to set parent:', parentError);
-                    // Continue anyway - affiliate was created successfully
-                }
+                // Affiliate was created successfully; a parent failure must not block.
+                await setAffiliateParent(affiliateStageA.id, parentIdStageA, TAPFILIATE_API_KEY, '[Stage A]');
             } else if (affiliateData.parent_id) {
                 console.log('[Parent] Skipping parent set – invalid parent_id value:', affiliateData.parent_id);
             }
