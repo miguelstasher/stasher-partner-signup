@@ -29,6 +29,11 @@ html, body {
     font-size: 15px;
 }
 
+/* Headings use Francois One; all other text inherits Inter from body */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Francois One', sans-serif;
+}
+
 /* ===== LOGIN ===== */
 
 .af-login {
@@ -464,7 +469,7 @@ html, body {
 }
 
 .af-coupon-code {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'Inter', sans-serif;
     font-size: 16px;
     font-weight: 700;
     color: var(--af-text);

@@ -67,6 +67,14 @@ body {
     padding: 0;
 }
 
+/* Headings use Francois One; all other text inherits Inter from body */
+h1, h2, h3, h4, h5, h6,
+.landing-title, .features-title, .feature-title, .section-title,
+.media-title, .trusted-brands-title, .page-title, .company-type-title,
+.confirmation-title, .terms-modal-title {
+    font-family: 'Francois One', sans-serif;
+}
+
 :root {
     --section-spacing: 60px;
 }
